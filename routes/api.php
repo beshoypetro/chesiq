@@ -7,14 +7,17 @@ use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\InsightsController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\TrainerController;
 use App\Http\Middleware\EnsureAdmin;
 use Illuminate\Support\Facades\Route;
 
-// Public auth routes
-Route::post('/register',         [AuthController::class,        'register']);
-Route::post('/login',            [AuthController::class,        'login']);
-Route::post('/forgot-password',  [PasswordResetController::class, 'forgotPassword']);
-Route::post('/reset-password',   [PasswordResetController::class, 'resetPassword']);
+// Public auth routes (throttled to resist credential-stuffing and reset-spam)
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/register',         [AuthController::class,        'register']);
+    Route::post('/login',            [AuthController::class,        'login']);
+    Route::post('/forgot-password',  [PasswordResetController::class, 'forgotPassword']);
+    Route::post('/reset-password',   [PasswordResetController::class, 'resetPassword']);
+});
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -30,7 +33,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/insights', [InsightsController::class, 'index']);
 
-    Route::post('/chess/commentary', [CommentaryController::class, 'generate']);
+    // LLM endpoints — throttled per-user to protect free-tier quotas from abuse/runaway loops
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/chess/commentary', [CommentaryController::class, 'generate']);
+        Route::post('/training/coach',   [TrainerController::class,    'coach']);
+    });
+
+    // Trainer (opening drill with voice coach)
+    Route::prefix('training')->group(function () {
+        Route::get('/plan',                      [TrainerController::class, 'plan']);
+        Route::get('/line/{lineId}',             [TrainerController::class, 'line']);
+        Route::post('/attempt',                  [TrainerController::class, 'attempt']);
+        Route::post('/line/{lineId}/complete',   [TrainerController::class, 'completeLine']);
+        Route::post('/session/start',            [TrainerController::class, 'startSession']);
+        Route::post('/session/{id}/end',         [TrainerController::class, 'endSession']);
+    });
 
     // Admin-only routes
     Route::middleware(EnsureAdmin::class)->prefix('admin')->group(function () {

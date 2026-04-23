@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -26,9 +28,7 @@ class AuthController extends Controller
         $chessCom = null;
         if (!empty($data['chess_com_username'])) {
             $username = strtolower(trim($data['chess_com_username']));
-            $ctx  = stream_context_create(['http' => ['ignore_errors' => true, 'timeout' => 5, 'header' => "User-Agent: Chesiq/1.0\r\n"]]);
-            $resp = @file_get_contents("https://api.chess.com/pub/player/{$username}", false, $ctx);
-            if ($resp === false || !json_decode($resp)) {
+            if (!$this->chessComUsernameExists($username)) {
                 return response()->json([
                     'message' => 'chess.com username not found.',
                     'errors'  => ['chess_com_username' => ['Username not found on chess.com.']],
@@ -85,9 +85,7 @@ class AuthController extends Controller
         $data     = $request->validate(['chess_com_username' => 'required|string|max:50']);
         $username = strtolower(trim($data['chess_com_username']));
 
-        $ctx  = stream_context_create(['http' => ['ignore_errors' => true, 'timeout' => 5, 'header' => "User-Agent: Chesiq/1.0\r\n"]]);
-        $resp = @file_get_contents("https://api.chess.com/pub/player/{$username}", false, $ctx);
-        if ($resp === false || !json_decode($resp)) {
+        if (!$this->chessComUsernameExists($username)) {
             return response()->json(['message' => 'chess.com username not found.'], 422);
         }
 
@@ -166,8 +164,29 @@ class AuthController extends Controller
 
     private function fetchUrl(string $url): string|false
     {
-        $ctx = stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true, 'header' => "User-Agent: Chesiq/1.0\r\n"]]);
-        return @file_get_contents($url, false, $ctx);
+        try {
+            $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(10)->get($url);
+            if (!$resp->successful()) {
+                Log::warning('chess.com fetch non-success', ['url' => $url, 'status' => $resp->status()]);
+                return false;
+            }
+            return $resp->body();
+        } catch (\Throwable $e) {
+            Log::warning('chess.com fetch failed', ['url' => $url, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    private function chessComUsernameExists(string $username): bool
+    {
+        try {
+            $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(5)
+                ->get("https://api.chess.com/pub/player/{$username}");
+            return $resp->successful() && is_array($resp->json());
+        } catch (\Throwable $e) {
+            Log::warning('chess.com username lookup failed', ['username' => $username, 'error' => $e->getMessage()]);
+            return false;
+        }
     }
 
     private function extractPgnHeader(string $pgn, string $key): ?string

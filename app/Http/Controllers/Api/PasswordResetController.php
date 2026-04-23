@@ -17,6 +17,23 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
+        // Dev-mode escape hatch: if mail is going to the log file (MAIL_MAILER=log),
+        // surface the reset link directly in the response so local users can actually reset.
+        // This ONLY runs when APP_ENV=local — production keeps the privacy-preserving flow.
+        if (app()->environment('local') && config('mail.default') === 'log') {
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                $token     = Password::createToken($user);
+                $frontend  = rtrim(env('FRONTEND_URL', 'http://localhost:8080'), '/');
+                $resetUrl  = "{$frontend}/reset-password?token={$token}&email=" . urlencode($user->email);
+                return response()->json([
+                    'message'       => 'Dev mode: email is logged, use the direct reset URL below.',
+                    'dev_reset_url' => $resetUrl,
+                ]);
+            }
+            // Fall through to generic flow if user not found — keeps behavior uniform in tests
+        }
+
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {

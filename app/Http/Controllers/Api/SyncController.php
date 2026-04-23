@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SyncController extends Controller
 {
@@ -95,12 +97,17 @@ class SyncController extends Controller
 
     private function fetchUrl(string $url): string|false
     {
-        $ctx = stream_context_create(['http' => [
-            'timeout'       => 10,
-            'ignore_errors' => true,
-            'header'        => "User-Agent: Chesiq/1.0\r\n",
-        ]]);
-        return @file_get_contents($url, false, $ctx);
+        try {
+            $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(10)->get($url);
+            if (!$resp->successful()) {
+                Log::warning('chess.com sync fetch non-success', ['url' => $url, 'status' => $resp->status()]);
+                return false;
+            }
+            return $resp->body();
+        } catch (\Throwable $e) {
+            Log::warning('chess.com sync fetch failed', ['url' => $url, 'error' => $e->getMessage()]);
+            return false;
+        }
     }
 
     private function extractPgnHeader(string $pgn, string $key): ?string
