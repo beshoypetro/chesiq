@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Piper TTS — binaries and voice models are large and platform-specific.
+# Only the README is checked in; set up locally per piper/README.md.
+/piper/*
+!/piper/README.md
+!/piper/.gitkeep
+/storage/app/tts-cache

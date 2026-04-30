@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -179,14 +180,22 @@ class AuthController extends Controller
 
     private function chessComUsernameExists(string $username): bool
     {
-        try {
-            $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(5)
-                ->get("https://api.chess.com/pub/player/{$username}");
-            return $resp->successful() && is_array($resp->json());
-        } catch (\Throwable $e) {
-            Log::warning('chess.com username lookup failed', ['username' => $username, 'error' => $e->getMessage()]);
-            return false;
-        }
+        // Cache positive and negative results for 1 hour to limit how quickly an
+        // attacker can enumerate chess.com usernames through our endpoints.
+        return Cache::remember(
+            "chesscom:exists:" . strtolower($username),
+            now()->addHour(),
+            function () use ($username): bool {
+                try {
+                    $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(5)
+                        ->get("https://api.chess.com/pub/player/{$username}");
+                    return $resp->successful() && is_array($resp->json());
+                } catch (\Throwable $e) {
+                    Log::warning('chess.com username lookup failed', ['username' => $username, 'error' => $e->getMessage()]);
+                    return false;
+                }
+            }
+        );
     }
 
     private function extractPgnHeader(string $pgn, string $key): ?string

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\InsightsController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TrainerController;
+use App\Http\Controllers\Api\TtsController;
 use App\Http\Middleware\EnsureAdmin;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +24,9 @@ Route::middleware('throttle:10,1')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me',               [AuthController::class, 'me']);
     Route::post('/logout',          [AuthController::class, 'logout']);
-    Route::post('/me/username',     [AuthController::class, 'updateUsername']);
+    // Throttled because updateUsername probes chess.com's public API,
+    // which lets an attacker enumerate chess.com usernames at authed-user speed otherwise.
+    Route::middleware('throttle:10,1')->post('/me/username', [AuthController::class, 'updateUsername']);
 
     Route::post('/sync', [SyncController::class, 'sync']);
 
@@ -37,6 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('throttle:30,1')->group(function () {
         Route::post('/chess/commentary', [CommentaryController::class, 'generate']);
         Route::post('/training/coach',   [TrainerController::class,    'coach']);
+    });
+
+    // Local TTS (Piper). Heavier throttle because voice fires per move.
+    Route::middleware('throttle:120,1')->group(function () {
+        Route::post('/tts', [TtsController::class, 'synthesize']);
     });
 
     // Trainer (opening drill with voice coach)

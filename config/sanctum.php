@@ -47,7 +47,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Tokens live in the SPA's localStorage, so we bound the blast radius of a
+    // stolen token by expiring after 30 days (43200 minutes). Active sessions
+    // aren't auto-refreshed — users re-authenticate when the token lapses.
+    'expiration' => 43200,
 
     /*
     |--------------------------------------------------------------------------
