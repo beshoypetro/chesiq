@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Puzzle;
+use App\Models\PuzzleRushScore;
+use App\Models\PuzzleStreakScore;
 use App\Models\UserPuzzleAttempt;
 use App\Models\UserPuzzleRating;
 use Illuminate\Http\JsonResponse;
@@ -124,6 +126,66 @@ class PuzzleController extends Controller
                 'trappedPiece',
             ],
         ]);
+    }
+
+    // F024: Puzzle Streak
+    public function streakScore(Request $request): JsonResponse
+    {
+        $data = $request->validate(['length' => 'required|integer|min:1']);
+        $user = $request->user();
+
+        PuzzleStreakScore::create([
+            'user_id' => $user->id,
+            'length' => $data['length'],
+            'created_at' => now(),
+        ]);
+
+        $best = PuzzleStreakScore::where('user_id', $user->id)->max('length');
+
+        return response()->json(['saved' => true, 'best' => $best]);
+    }
+
+    public function streakBest(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $best = PuzzleStreakScore::where('user_id', $user->id)->max('length');
+        $history = PuzzleStreakScore::where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get(['length', 'created_at'])
+            ->map(fn ($s) => ['length' => $s->length, 'created_at' => $s->created_at]);
+
+        return response()->json(['best' => $best ?? 0, 'history' => $history]);
+    }
+
+    // F002: Puzzle Rush
+    public function rushScore(Request $request): JsonResponse
+    {
+        $data = $request->validate(['score' => 'required|integer|min:0']);
+        $user = $request->user();
+
+        PuzzleRushScore::create([
+            'user_id' => $user->id,
+            'score' => $data['score'],
+            'created_at' => now(),
+        ]);
+
+        $best = PuzzleRushScore::where('user_id', $user->id)->max('score');
+
+        return response()->json(['saved' => true, 'best' => $best]);
+    }
+
+    public function rushBest(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $best = PuzzleRushScore::where('user_id', $user->id)->max('score');
+        $history = PuzzleRushScore::where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get(['score', 'created_at'])
+            ->map(fn ($s) => ['score' => $s->score, 'created_at' => $s->created_at]);
+
+        return response()->json(['best' => $best ?? 0, 'history' => $history]);
     }
 
     public function history(Request $request): JsonResponse

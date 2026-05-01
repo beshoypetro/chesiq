@@ -62,12 +62,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/session/{id}/end', [TrainerController::class, 'endSession']);
     });
 
-    // Puzzles (F001)
+    // Puzzles (F001 + F024 streak + F002 rush)
     Route::prefix('puzzles')->group(function () {
         Route::get('/next', [PuzzleController::class, 'next']);
         Route::post('/{puzzleId}/attempt', [PuzzleController::class, 'attempt']);
         Route::get('/themes', [PuzzleController::class, 'themes']);
         Route::get('/history', [PuzzleController::class, 'history']);
+        // F024 Streak
+        Route::post('/streak/score', [PuzzleController::class, 'streakScore']);
+        Route::get('/streak/best', [PuzzleController::class, 'streakBest']);
+        // F002 Rush
+        Route::post('/rush/score', [PuzzleController::class, 'rushScore']);
+        Route::get('/rush/best', [PuzzleController::class, 'rushBest']);
     });
 
     // Game phase accuracy (F033)
