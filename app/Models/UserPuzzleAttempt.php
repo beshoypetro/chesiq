@@ -8,5 +8,5 @@ class UserPuzzleAttempt extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['user_id', 'puzzle_id', 'solved', 'time_ms', 'created_at'];
+    protected $fillable = ['user_id', 'puzzle_id', 'solved', 'time_ms', 'time_limit_ms', 'created_at'];
 }

@@ -76,6 +76,7 @@ class PuzzleController extends Controller
         $data = $request->validate([
             'solved' => 'required|boolean',
             'time_ms' => 'nullable|integer|min:0',
+            'time_limit_ms' => 'nullable|integer|min:0',
         ]);
 
         $user = $request->user();
@@ -86,6 +87,7 @@ class PuzzleController extends Controller
             'puzzle_id' => $puzzleId,
             'solved' => $data['solved'],
             'time_ms' => $data['time_ms'] ?? null,
+            'time_limit_ms' => $data['time_limit_ms'] ?? null,
             'created_at' => now(),
         ]);
 
