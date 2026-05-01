@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentaryController;
+use App\Http\Controllers\Api\DrillController;
 use App\Http\Controllers\Api\DrillQueueController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\InsightsController;
@@ -82,6 +83,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Puzzle theme weakness (F011)
     Route::get('/insights/puzzle-themes', [InsightsController::class, 'puzzleThemes']);
+
+    // Position Drill Mode (F029)
+    Route::get('/drills', [DrillController::class, 'index']);
+    Route::post('/drills', [DrillController::class, 'store']);
+    Route::post('/drills/{id}/attempt', [DrillController::class, 'attempt']);
+    Route::delete('/drills/{id}', [DrillController::class, 'destroy']);
 
     // Puzzle Sets (F019)
     Route::get('/puzzle-sets', [PuzzleSetController::class, 'index']);
