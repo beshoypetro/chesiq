@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\InsightsController;
 use App\Http\Controllers\Api\LearnController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\PuzzleController;
+use App\Http\Controllers\Api\PuzzleSetController;
 use App\Http\Controllers\Api\RepertoireController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TrainerController;
@@ -81,6 +82,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Puzzle theme weakness (F011)
     Route::get('/insights/puzzle-themes', [InsightsController::class, 'puzzleThemes']);
+
+    // Puzzle Sets (F019)
+    Route::get('/puzzle-sets', [PuzzleSetController::class, 'index']);
+    Route::post('/puzzle-sets', [PuzzleSetController::class, 'store']);
+    Route::get('/puzzle-sets/{id}/next', [PuzzleSetController::class, 'next']);
+    Route::post('/puzzle-sets/{id}/puzzles/{puzzleId}', [PuzzleSetController::class, 'addPuzzle']);
 
     // Mistake puzzle from game (F010)
     Route::get('/games/{game}/puzzle/{moveIndex}', [GameController::class, 'mistakePuzzle']);
