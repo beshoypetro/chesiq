@@ -28,6 +28,8 @@ class Game extends Model
         'played_at',
         'analyzed_at',
         'source',
+        'repertoire_deviation_ply',
+        'variant',
     ];
 
     protected $casts = [
@@ -38,6 +40,7 @@ class Game extends Model
         'white_rating' => 'integer',
         'black_rating' => 'integer',
         'move_count' => 'integer',
+        'repertoire_deviation_ply' => 'integer',
     ];
 
     public function user(): BelongsTo

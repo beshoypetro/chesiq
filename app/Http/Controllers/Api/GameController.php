@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\MoveAnalysis;
+use App\Models\Repertoire;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -232,6 +233,70 @@ class GameController extends Controller
             'played_at' => $game->played_at?->toISOString(),
             'analyzed_at' => $game->analyzed_at?->toISOString(),
             'pgn' => $game->pgn,
+            'repertoire_deviation_ply' => $game->repertoire_deviation_ply,
+            'variant' => $game->variant ?? 'standard',
         ];
+    }
+
+    /**
+     * Compute the repertoire deviation ply for a game given its PGN moves.
+     * Called from SyncController after importing games.
+     * Returns the ply index (0-based) of the first deviation, or null if the
+     * entire game is within the repertoire (or user has no repertoire).
+     */
+    public static function computeRepertoireDeviation(int $userId, string $pgn, string $userColor): ?int
+    {
+        $repertoires = Repertoire::where('user_id', $userId)
+            ->where('color', $userColor)
+            ->get();
+
+        if ($repertoires->isEmpty()) {
+            return null;
+        }
+
+        // Parse moves from PGN (simple extraction of SAN moves)
+        preg_match_all('/\d+\.\s*(\S+)(?:\s+(\S+))?/', $pgn, $matches);
+        $gameMoves = [];
+        foreach ($matches[1] as $i => $white) {
+            if ($white && $white !== '...' && !str_starts_with($white, '{')) {
+                $gameMoves[] = $white;
+            }
+            $black = $matches[2][$i] ?? '';
+            if ($black && $black !== '...' && !str_starts_with($black, '{')) {
+                $gameMoves[] = $black;
+            }
+        }
+
+        $bestDeviationPly = null;
+
+        foreach ($repertoires as $rep) {
+            $tree = json_decode($rep->tree_json, true);
+            if (!$tree) {
+                continue;
+            }
+            $ply = self::walkTree($tree, $gameMoves, 0);
+            if ($bestDeviationPly === null || $ply > $bestDeviationPly) {
+                $bestDeviationPly = $ply;
+            }
+        }
+
+        return $bestDeviationPly;
+    }
+
+    private static function walkTree(array $node, array $gameMoves, int $ply): int
+    {
+        if ($ply >= count($gameMoves)) {
+            return $ply;
+        }
+        $currentMove = $gameMoves[$ply];
+        $children = $node['children'] ?? [];
+        foreach ($children as $child) {
+            $childMove = $child['move'] ?? $child['san'] ?? '';
+            if ($childMove === $currentMove) {
+                return self::walkTree($child, $gameMoves, $ply + 1);
+            }
+        }
+        // Deviation found at this ply
+        return $ply;
     }
 }

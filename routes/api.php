@@ -99,7 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/training/ai-level', [GameController::class, 'aiLevel']);
     Route::post('/training/ai-level/update', [GameController::class, 'updateAiLevel']);
 
-    // Repertoires (F018)
+    // Repertoires (F018 + F027 coverage)
     Route::prefix('repertoires')->group(function () {
         Route::get('/', [RepertoireController::class, 'index']);
         Route::post('/', [RepertoireController::class, 'store']);
@@ -107,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/{id}', [RepertoireController::class, 'update']);
         Route::delete('/{id}', [RepertoireController::class, 'destroy']);
         Route::get('/{id}/export.pgn', [RepertoireController::class, 'exportPgn']);
+        Route::get('/{id}/coverage', [RepertoireController::class, 'coverage']); // F027
     });
 
     // Admin-only routes

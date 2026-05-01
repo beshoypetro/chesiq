@@ -1,55 +1,50 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\CoordinateScore;
-use App\Models\VisionScore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TrainingController extends Controller
 {
-    // F013 — Board Coordinate Training
-
     public function coordinateScore(Request $request): JsonResponse
     {
         $data = $request->validate([
             'score' => 'required|integer|min:0',
-            'accuracy' => 'required|numeric|min:0|max:100',
+            'accuracy' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $user = $request->user();
 
-        CoordinateScore::create([
+        DB::table('coordinate_scores')->insert([
             'user_id' => $user->id,
             'score' => $data['score'],
-            'accuracy' => $data['accuracy'],
+            'accuracy' => $data['accuracy'] ?? null,
             'created_at' => now(),
         ]);
 
-        $best = CoordinateScore::where('user_id', $user->id)->max('score');
+        $best = DB::table('coordinate_scores')
+            ->where('user_id', $user->id)
+            ->max('score') ?? 0;
 
-        return response()->json([
-            'message' => 'Score saved.',
-            'best' => $best,
-        ]);
+        return response()->json(['message' => 'Score saved.', 'best' => $best]);
     }
 
     public function coordinateBest(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $best = CoordinateScore::where('user_id', $user->id)->max('score');
-        $history = CoordinateScore::where('user_id', $user->id)
+        $best = DB::table('coordinate_scores')
+            ->where('user_id', $user->id)
+            ->max('score');
+
+        $history = DB::table('coordinate_scores')
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(20)
-            ->get(['score', 'accuracy', 'created_at'])
-            ->map(fn ($s) => [
-                'score' => $s->score,
-                'accuracy' => $s->accuracy,
-                'created_at' => $s->created_at?->toISOString(),
-            ]);
+            ->get(['score', 'accuracy', 'created_at']);
 
         return response()->json([
             'best' => $best,
@@ -57,60 +52,47 @@ class TrainingController extends Controller
         ]);
     }
 
-    // F035 — Vision Drills
-
     public function visionScore(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'drill_type' => 'required|string|in:knight_reach,piece_coverage',
+            'drill_type' => 'required|string|max:50',
             'score' => 'required|integer|min:0',
-            'accuracy' => 'required|numeric|min:0|max:100',
+            'accuracy' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $user = $request->user();
 
-        VisionScore::create([
+        DB::table('vision_scores')->insert([
             'user_id' => $user->id,
             'drill_type' => $data['drill_type'],
             'score' => $data['score'],
-            'accuracy' => $data['accuracy'],
+            'accuracy' => $data['accuracy'] ?? null,
             'created_at' => now(),
         ]);
 
-        $best = VisionScore::where('user_id', $user->id)
+        $best = DB::table('vision_scores')
+            ->where('user_id', $user->id)
             ->where('drill_type', $data['drill_type'])
-            ->max('score');
+            ->max('score') ?? 0;
 
-        return response()->json([
-            'message' => 'Score saved.',
-            'best' => $best,
-        ]);
+        return response()->json(['message' => 'Score saved.', 'best' => $best]);
     }
 
     public function visionBest(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $rows = VisionScore::where('user_id', $user->id)
+        $bests = DB::table('vision_scores')
+            ->where('user_id', $user->id)
             ->selectRaw('drill_type, MAX(score) as best')
             ->groupBy('drill_type')
-            ->get();
+            ->pluck('best', 'drill_type');
 
-        $bests = [];
-        foreach ($rows as $row) {
-            $bests[$row->drill_type] = $row->best;
-        }
-
-        $history = VisionScore::where('user_id', $user->id)
+        $history = DB::table('vision_scores')
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
-            ->limit(30)
-            ->get(['drill_type', 'score', 'accuracy', 'created_at'])
-            ->map(fn ($s) => [
-                'drill_type' => $s->drill_type,
-                'score' => $s->score,
-                'accuracy' => $s->accuracy,
-                'created_at' => $s->created_at?->toISOString(),
-            ]);
+            ->limit(50)
+            ->get(['drill_type', 'score', 'accuracy', 'created_at']);
 
         return response()->json([
             'bests' => $bests,
