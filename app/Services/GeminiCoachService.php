@@ -302,6 +302,46 @@ PROMPT;
     }
 
     /**
+     * F005: In-game hint — given a position FEN, return a one-sentence strategic goal.
+     * Does NOT reveal the best move, only the idea.
+     */
+    public function hint(string $prompt): string
+    {
+        $apiKey = config('services.gemini.key');
+        if (! $apiKey) {
+            return 'Focus on piece activity and king safety.';
+        }
+
+        $model = config('services.gemini.model', 'gemini-2.0-flash');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+        try {
+            $response = Http::timeout(10)->post($url, [
+                'system_instruction' => [
+                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                ],
+                'contents' => [[
+                    'role' => 'user',
+                    'parts' => [['text' => $prompt]],
+                ]],
+                'generationConfig' => [
+                    'maxOutputTokens' => 80,
+                    'temperature' => 0.7,
+                ],
+            ]);
+        } catch (\Throwable) {
+            return 'Focus on piece activity and king safety.';
+        }
+
+        if (! $response->successful()) {
+            return 'Focus on piece activity and king safety.';
+        }
+
+        $text = trim((string) $response->json('candidates.0.content.parts.0.text', ''));
+        return $text ?: 'Focus on piece activity and king safety.';
+    }
+
+    /**
      * Generate coaching rationales for the student-side moves of an opening line.
      *
      * Returns an array of ['move_index' => int, 'san' => string, 'text' => string] entries.

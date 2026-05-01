@@ -21,6 +21,13 @@ class User extends Authenticatable
         'is_admin',
         'chess_com_username',
         'last_synced_at',
+        // F008
+        'current_streak',
+        'last_active_date',
+        // F030
+        'digest_unsubscribed_at',
+        // F031
+        'style_profile_json',
     ];
 
     public function games(): HasMany
@@ -40,6 +47,9 @@ class User extends Authenticatable
             'password' => 'hashed',
             'last_synced_at' => 'datetime',
             'is_admin' => 'boolean',
+            'digest_unsubscribed_at' => 'datetime',
+            'last_active_date' => 'date',
+            'current_streak' => 'integer',
         ];
     }
 }

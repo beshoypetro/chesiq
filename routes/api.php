@@ -1,17 +1,28 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AchievementController;
+use App\Http\Controllers\Api\AnnotationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentaryController;
+use App\Http\Controllers\Api\DatabaseController;
+use App\Http\Controllers\Api\DigestController;
 use App\Http\Controllers\Api\DrillController;
 use App\Http\Controllers\Api\DrillQueueController;
+use App\Http\Controllers\Api\EndgameController;
+use App\Http\Controllers\Api\ExplorerController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\HintController;
 use App\Http\Controllers\Api\InsightsController;
 use App\Http\Controllers\Api\LearnController;
+use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\ModelGamesController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\PuzzleController;
 use App\Http\Controllers\Api\PuzzleSetController;
 use App\Http\Controllers\Api\RepertoireController;
+use App\Http\Controllers\Api\StudyPlanController;
+use App\Http\Controllers\Api\StyleController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TrainerController;
 use App\Http\Controllers\Api\TrainingController;
@@ -26,6 +37,9 @@ Route::middleware('throttle:10,1')->group(function () {
     Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 });
+
+// Public digest unsubscribe (no auth required — token in URL)
+Route::get('/digest/unsubscribe', [DigestController::class, 'unsubscribe']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -47,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('throttle:30,1')->group(function () {
         Route::post('/chess/commentary', [CommentaryController::class, 'generate']);
         Route::post('/training/coach', [TrainerController::class,    'coach']);
+        // F005: In-game hint
+        Route::post('/chess/hint', [HintController::class, 'hint']);
     });
 
     // Local TTS (Piper). Heavier throttle because voice fires per move.
@@ -78,11 +94,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/rush/best', [PuzzleController::class, 'rushBest']);
     });
 
+    // Game annotations (F036)
+    Route::get('/games/{game}/annotations', [AnnotationController::class, 'index']);
+    Route::post('/games/{game}/annotations', [AnnotationController::class, 'store']);
+    Route::delete('/games/{game}/annotations/{moveIndex}', [AnnotationController::class, 'destroy']);
+
     // Game phase accuracy (F033)
     Route::get('/insights/phase-accuracy', [InsightsController::class, 'phaseAccuracy']);
 
     // Puzzle theme weakness (F011)
     Route::get('/insights/puzzle-themes', [InsightsController::class, 'puzzleThemes']);
+
+    // Playing style (F031)
+    Route::get('/insights/style', [StyleController::class, 'index']);
 
     // Position Drill Mode (F029)
     Route::get('/drills', [DrillController::class, 'index']);
@@ -133,11 +157,45 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/coverage', [RepertoireController::class, 'coverage']); // F027
     });
 
+    // Endgame trainer (F007)
+    Route::prefix('endgame')->group(function () {
+        Route::get('/next', [EndgameController::class, 'next']);
+        Route::post('/{id}/attempt', [EndgameController::class, 'attempt']);
+        Route::get('/tablebase', [EndgameController::class, 'tablebase']);
+        Route::get('/ratings', [EndgameController::class, 'ratings']);
+    });
+
+    // Achievements (F008)
+    Route::get('/achievements', [AchievementController::class, 'index']);
+    Route::get('/achievements/user', [AchievementController::class, 'user']);
+
+    // Study plan (F022)
+    Route::get('/study-plan', [StudyPlanController::class, 'index']);
+    Route::post('/study-plan/override', [StudyPlanController::class, 'override']);
+
+    // Opening explorer (F003)
+    Route::get('/chess/explorer', [ExplorerController::class, 'index']);
+
+    // Master game database (F021)
+    Route::get('/database/games', [DatabaseController::class, 'games']);
+
+    // Opening model games (F023)
+    Route::get('/learn/lines/{lineId}/model-games', [ModelGamesController::class, 'index']);
+
+    // Video lessons (F025)
+    Route::get('/lessons', [LessonController::class, 'index']);
+    Route::get('/lessons/{id}', [LessonController::class, 'show']);
+    Route::post('/lessons/{id}/complete', [LessonController::class, 'complete']);
+
     // Admin-only routes
     Route::middleware(EnsureAdmin::class)->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::post('/users/{user}/toggle-admin', [AdminController::class, 'toggleAdmin']);
         Route::delete('/users/{user}', [AdminController::class, 'deleteUser']);
+        // F030: Email digest admin preview
+        Route::get('/digest/preview/{userId}', [DigestController::class, 'preview']);
+        // F023: Admin add model game
+        Route::post('/learn/lines/{lineId}/model-games', [ModelGamesController::class, 'store']);
     });
 });
