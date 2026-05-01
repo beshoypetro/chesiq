@@ -29,9 +29,7 @@ class AchievementController extends Controller
         $user = $request->user();
         $this->service->updateStreak($user);
 
-        // Seed definitions first
-        $this->service->seed();
-
+        // check() already calls seed() internally — no need to call it explicitly here
         $earned = DB::table('user_achievements as ua')
             ->join('achievements as a', 'ua.achievement_id', '=', 'a.id')
             ->where('ua.user_id', $user->id)

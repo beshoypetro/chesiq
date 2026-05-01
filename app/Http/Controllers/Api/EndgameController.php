@@ -35,15 +35,16 @@ class EndgameController extends Controller
         }
 
         // Pick a position close to user's rating
-        $position = $query->orderByRaw('ABS(difficulty - ?)', [$userRating])
+        $positions = $query->orderByRaw('ABS(difficulty - ?)', [$userRating])
             ->inRandomOrder()
             ->limit(5)
-            ->get()
-            ->random();
+            ->get();
 
-        if (! $position) {
+        if ($positions->isEmpty()) {
             return response()->json(['message' => 'No positions found.'], 404);
         }
+
+        $position = $positions->random();
 
         return response()->json([
             'position' => [

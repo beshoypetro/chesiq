@@ -128,7 +128,7 @@ class PuzzleSetController extends Controller
             ->values();
 
         if ($wrongIds->isNotEmpty()) {
-            $set->puzzles()->sync($wrongIds->toArray());
+            $set->puzzles()->syncWithoutDetaching($wrongIds->toArray());
         }
     }
 

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         if (! Schema::hasTable('opening_line_model_games')) {
             Schema::create('opening_line_model_games', function (Blueprint $table) {
-                $table->integer('opening_line_id');
+                $table->string('opening_line_id');
                 $table->text('game_pgn');
                 $table->integer('key_move_ply')->nullable();
                 $table->text('idea_text')->nullable();

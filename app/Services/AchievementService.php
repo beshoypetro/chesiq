@@ -96,17 +96,17 @@ class AchievementService
             ->get()
             ->first(fn ($g) => ($g->user_color === 'white' ? $g->white_accuracy : $g->black_accuracy) >= 90);
 
-        $cleanGame = $user->games()
+        $cleanGameCount = DB::table('games')
+            ->where('user_id', $user->id)
             ->whereNotNull('analyzed_at')
-            ->get()
-            ->filter(function ($g) {
-                $blunders = DB::table('move_analyses')
-                    ->where('game_id', $g->id)
-                    ->where('color', $g->user_color)
-                    ->whereIn('classification', ['blunder', 'miss'])
-                    ->count();
-                return $blunders === 0;
-            })->isNotEmpty();
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                  ->from('move_analyses')
+                  ->whereColumn('move_analyses.game_id', 'games.id')
+                  ->whereIn('move_analyses.classification', ['blunder', 'miss']);
+            })
+            ->count();
+        $cleanGame = $cleanGameCount > 0;
 
         $conditions = [
             'puzzle_first'      => $puzzlesSolved >= 1,

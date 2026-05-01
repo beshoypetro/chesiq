@@ -57,10 +57,18 @@ class LearnController extends Controller
             $reps = 0;
         } else {
             $reps = $item->repetitions + 1;
+            // prevInterval is what the interval WILL be after the previous step completes.
+            // On rep 1 the previous interval was 1; on rep 2 it becomes 6.
+            // For rep 3+ we use the stored interval_days (already reflecting rep 2's 6-day value).
+            $prevInterval = match (true) {
+                $item->repetitions <= 1 => 1,
+                $item->repetitions === 2 => 6,
+                default => $item->interval_days,
+            };
             $interval = match ($reps) {
                 1 => 1,
                 2 => 6,
-                default => (int) round($item->interval_days * $ef),
+                default => (int) round($prevInterval * $ef),
             };
         }
 

@@ -136,14 +136,21 @@ class RepertoireController extends Controller
         $status = 'red'; // never attempted
         if ($uci && isset($srByUci[$uci])) {
             $sr = $srByUci[$uci];
+            $repetitions = $sr['repetitions'] ?? 0;
             $interval = $sr['interval_days'] ?? 0;
             $dueAt = $sr['due_at'] ?? null;
-            if ($interval > 30) {
+
+            if ($repetitions === 0 || $interval <= 1) {
+                // Never successfully reviewed or interval was reset
+                $status = 'red';
+            } elseif ($interval > 7) {
+                // Well-reviewed — not due for more than 7 days
                 $status = 'green';
-            } elseif ($dueAt && now()->diffInDays($dueAt, false) > 7) {
-                $status = 'green';
-            } else {
+            } elseif ($dueAt && now()->diffInDays($dueAt, false) <= 7) {
+                // Due within 7 days
                 $status = 'yellow';
+            } else {
+                $status = 'green';
             }
         }
 

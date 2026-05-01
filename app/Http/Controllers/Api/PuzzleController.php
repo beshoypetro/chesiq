@@ -15,6 +15,10 @@ class PuzzleController extends Controller
 {
     public function next(Request $request): JsonResponse
     {
+        $request->validate([
+            'theme' => 'nullable|string|in:fork,pin,skewer,sacrifice,discoveredAttack,backRank,mateIn1,mateIn2,mateIn3,endgame,opening,middlegame,attraction,deflection,exposedKing,hangingPiece,quietMove,xRayAttack,zugzwang',
+        ]);
+
         $user = $request->user();
         $theme = $request->input('theme');
 

@@ -29,6 +29,13 @@ return new class extends Migration
             });
         }
 
+        // BUG-003: Unsubscribe token for digest emails (indexed for O(1) lookup)
+        if (! Schema::hasColumn('users', 'unsubscribe_token')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('unsubscribe_token', 64)->nullable()->unique();
+            });
+        }
+
         // F008: Streak columns on users
         if (! Schema::hasColumn('users', 'current_streak')) {
             Schema::table('users', function (Blueprint $table) {

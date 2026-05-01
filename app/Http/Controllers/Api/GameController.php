@@ -113,8 +113,15 @@ class GameController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // $moveIndex is a 1-based ply count (half-moves).
+        // move_analyses stores full move numbers (1-based) and color.
+        // ply 1 = white move 1, ply 2 = black move 1, ply 3 = white move 2, etc.
+        $fullMoveNumber = (int) floor(($moveIndex - 1) / 2) + 1;
+        $color = ($moveIndex % 2 === 1) ? 'white' : 'black';
+
         $move = $game->moveAnalyses()
-            ->where('move_number', $moveIndex)
+            ->where('move_number', $fullMoveNumber)
+            ->where('color', $color)
             ->first();
 
         if (!$move) {
@@ -156,7 +163,15 @@ class GameController extends Controller
             'time_control' => $data['time_control'] ?? null,
             'source' => $data['source'] ?? 'bot',
             'played_at' => now(),
-            'move_count' => substr_count(trim($data['pgn']), ' ') + 1,
+            'move_count' => (function (string $pgn): int {
+                // Count SAN move tokens (e.g. e4, Nf3, O-O, exd5, e8=Q+) in PGN
+                preg_match_all(
+                    '/\b(?:O-O-O|O-O|[NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQK])?[+#]?)\b/',
+                    $pgn,
+                    $matches
+                );
+                return count($matches[0]);
+            })($data['pgn']),
         ]);
 
         return response()->json(['game' => $this->formatGame($game)], 201);
