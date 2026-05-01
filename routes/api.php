@@ -73,6 +73,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Game phase accuracy (F033)
     Route::get('/insights/phase-accuracy', [InsightsController::class, 'phaseAccuracy']);
 
+    // Puzzle theme weakness (F011)
+    Route::get('/insights/puzzle-themes', [InsightsController::class, 'puzzleThemes']);
+
     // Mistake puzzle from game (F010)
     Route::get('/games/{game}/puzzle/{moveIndex}', [GameController::class, 'mistakePuzzle']);
 

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\MoveAnalysis;
+use App\Models\UserPuzzleAttempt;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InsightsController extends Controller
 {
@@ -197,6 +199,58 @@ class InsightsController extends Controller
                 'games_analyzed' => $gameIds->count(),
             ],
         ]);
+    }
+
+    /**
+     * F011: Return solve rate per tactical theme over rolling 90 days.
+     */
+    public function puzzleThemes(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $since = now()->subDays(90);
+
+        // Join user_puzzle_attempts with puzzles to get theme data
+        $rows = DB::table('user_puzzle_attempts as a')
+            ->join('puzzles as p', 'a.puzzle_id', '=', 'p.id')
+            ->where('a.user_id', $userId)
+            ->where('a.created_at', '>=', $since)
+            ->whereNotNull('p.themes')
+            ->select('p.themes', 'a.solved')
+            ->get();
+
+        // Aggregate per theme
+        $themeStats = [];
+        foreach ($rows as $row) {
+            $themes = is_string($row->themes)
+                ? (json_decode($row->themes, true) ?? explode(' ', $row->themes))
+                : [];
+            foreach ($themes as $theme) {
+                $theme = trim($theme);
+                if (!$theme) continue;
+                if (!isset($themeStats[$theme])) {
+                    $themeStats[$theme] = ['solved' => 0, 'total' => 0];
+                }
+                $themeStats[$theme]['total']++;
+                if ($row->solved) $themeStats[$theme]['solved']++;
+            }
+        }
+
+        $result = [];
+        foreach ($themeStats as $theme => $stats) {
+            $result[] = [
+                'theme' => $theme,
+                'total' => $stats['total'],
+                'solved' => $stats['solved'],
+                'solve_rate' => $stats['total'] > 0
+                    ? round($stats['solved'] / $stats['total'] * 100, 1)
+                    : 0,
+            ];
+        }
+
+        // Sort by most attempted
+        usort($result, fn ($a, $b) => $b['total'] - $a['total']);
+
+        return response()->json(['data' => array_values($result)]);
     }
 
     private function cpLossToAccuracy(?int $cpLoss): float
