@@ -20,11 +20,11 @@ class LineProgress extends Model
     ];
 
     protected $casts = [
-        'mastery'      => 'float',
-        'attempts'     => 'integer',
-        'correct'      => 'integer',
+        'mastery' => 'float',
+        'attempts' => 'integer',
+        'correct' => 'integer',
         'last_seen_at' => 'datetime',
-        'next_due_at'  => 'datetime',
+        'next_due_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

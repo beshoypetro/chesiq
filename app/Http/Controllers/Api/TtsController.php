@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\PiperTtsService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -17,13 +16,13 @@ class TtsController extends Controller
     public function synthesize(Request $request, PiperTtsService $piper): HttpResponse
     {
         $v = $request->validate([
-            'text'  => 'required|string|max:2000',
+            'text' => 'required|string|max:2000',
             'voice' => 'nullable|string|max:40',
         ]);
 
         $userId = $request->user()->id;
-        $dayKey = "tts_daily:{$userId}:" . now()->format('Y-m-d');
-        $count  = (int) Cache::get($dayKey, 0);
+        $dayKey = "tts_daily:{$userId}:".now()->format('Y-m-d');
+        $count = (int) Cache::get($dayKey, 0);
         if ($count >= self::DAILY_TTS_CAP) {
             return response('', 429);
         }
@@ -38,9 +37,9 @@ class TtsController extends Controller
         Cache::put($dayKey, $count + 1, now()->endOfDay());
 
         return response($bytes, 200, [
-            'Content-Type'   => 'audio/wav',
+            'Content-Type' => 'audio/wav',
             'Content-Length' => (string) strlen($bytes),
-            'Cache-Control'  => 'private, max-age=86400',
+            'Cache-Control' => 'private, max-age=86400',
         ]);
     }
 }

@@ -40,7 +40,7 @@ return [
     ],
 
     'gemini' => [
-        'key'   => env('GEMINI_API_KEY'),
+        'key' => env('GEMINI_API_KEY'),
         // 2.5-flash is current free tier on the project attached to our key;
         // 2.0-flash was showing "limit: 0" in quota responses. Override with GEMINI_MODEL env if needed.
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),

@@ -7,6 +7,7 @@ use App\Models\OpeningLine;
 use App\Services\GeminiCoachService;
 use App\Services\PiperTtsService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 /**
  * Warms the Piper on-disk WAV cache for every authored move rationale so
@@ -35,14 +36,14 @@ class PregeneratePiperVoice extends Command
         'Right idea.',
         "That's it.",
         // Default quiz prompts
-        "Your turn.",
+        'Your turn.',
         "Your move. White to play. What's the next book move here?",
         "Your move. Black to play. What's the next book move here?",
         "Your move. Your side to play. What's the next book move here?",
         // Trainer fallbacks
-        "Hmm, let me think…",
+        'Hmm, let me think…',
         "I'll keep your progress locally for this session. Pick an opening to start.",
-        "Welcome back — picking up where we left off. Select a line to continue.",
+        'Welcome back — picking up where we left off. Select a line to continue.',
         "Welcome — I'm Alex, your chess coach. Pick an opening from the left and we'll learn it together.",
     ];
 
@@ -50,6 +51,7 @@ class PregeneratePiperVoice extends Command
     {
         if (! $piper->isAvailable()) {
             $this->error('Piper binary or default voice model is missing. See chesiq/piper/README.md.');
+
             return self::FAILURE;
         }
 
@@ -64,12 +66,13 @@ class PregeneratePiperVoice extends Command
                 $phraseCount++;
             }
         }
-        $this->line("  {$phraseCount}/" . count(self::CANNED_PHRASES) . ' phrases cached.');
+        $this->line("  {$phraseCount}/".count(self::CANNED_PHRASES).' phrases cached.');
 
         // 2. Walk every line in the catalog, fill in rationales, and voice them
         $lines = OpeningLine::orderBy('line_id')->get();
         if ($lines->isEmpty()) {
             $this->warn('No opening lines in the catalog. Run `php artisan db:seed --class=OpeningLinesSeeder` first.');
+
             return self::FAILURE;
         }
 
@@ -78,8 +81,8 @@ class PregeneratePiperVoice extends Command
         $bar->start();
 
         $totalRationales = 0;
-        $generatedNow    = 0;
-        $failures        = 0;
+        $generatedNow = 0;
+        $failures = 0;
 
         foreach ($lines as $line) {
             $rationales = $this->ensureRationales($line, $gemini);
@@ -113,7 +116,7 @@ class PregeneratePiperVoice extends Command
      * Returns the set of MoveRationale rows for the line. If --lines-only is
      * not set, fills in any missing student-side indices via Gemini first.
      *
-     * @return array{all: \Illuminate\Support\Collection, generated: int}
+     * @return array{all: Collection, generated: int}
      */
     private function ensureRationales(OpeningLine $line, GeminiCoachService $gemini): array
     {
@@ -157,24 +160,31 @@ class PregeneratePiperVoice extends Command
                 'black' => $i % 2 === 1,
                 default => true,
             };
-            if ($isStudent) $out[] = $i;
+            if ($isStudent) {
+                $out[] = $i;
+            }
         }
+
         return $out;
     }
 
     private function synthesize(PiperTtsService $piper, string $text, ?string $voice, bool $force): bool
     {
         $text = trim($text);
-        if ($text === '') return false;
+        if ($text === '') {
+            return false;
+        }
 
         if ($force) {
             // Simple --force path: wipe the specific cache file so synthesize
             // regenerates it. Relies on the service's internal cache layout.
             $cacheDir = storage_path('app/tts-cache');
             $voiceKey = $voice ?: 'en_US-amy-medium';
-            $hash     = hash('sha256', $voiceKey . '|' . $text);
-            $path     = "{$cacheDir}/{$voiceKey}/" . substr($hash, 0, 2) . "/{$hash}.wav";
-            if (is_file($path)) @unlink($path);
+            $hash = hash('sha256', $voiceKey.'|'.$text);
+            $path = "{$cacheDir}/{$voiceKey}/".substr($hash, 0, 2)."/{$hash}.wav";
+            if (is_file($path)) {
+                @unlink($path);
+            }
         }
 
         return $piper->synthesize($text, $voice) !== null;

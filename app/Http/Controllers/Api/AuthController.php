@@ -19,29 +19,29 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'               => 'required|string|max:255',
-            'email'              => 'required|string|email|max:255|unique:users',
-            'password'           => 'required|string|min:8|confirmed',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
             'chess_com_username' => 'nullable|string|max:50',
         ]);
 
         // Validate chess.com username if provided
         $chessCom = null;
-        if (!empty($data['chess_com_username'])) {
+        if (! empty($data['chess_com_username'])) {
             $username = strtolower(trim($data['chess_com_username']));
-            if (!$this->chessComUsernameExists($username)) {
+            if (! $this->chessComUsernameExists($username)) {
                 return response()->json([
                     'message' => 'chess.com username not found.',
-                    'errors'  => ['chess_com_username' => ['Username not found on chess.com.']],
+                    'errors' => ['chess_com_username' => ['Username not found on chess.com.']],
                 ], 422);
             }
             $chessCom = $username;
         }
 
-        $user  = User::create([
-            'name'               => $data['name'],
-            'email'              => $data['email'],
-            'password'           => Hash::make($data['password']),
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
             'chess_com_username' => $chessCom,
         ]);
         $token = $user->createToken('chesiq')->plainTextToken;
@@ -50,8 +50,8 @@ class AuthController extends Controller
         $newGames = $chessCom ? $this->syncGamesForUser($user, $chessCom) : 0;
 
         return response()->json([
-            'user'      => $this->formatUser($user),
-            'token'     => $token,
+            'user' => $this->formatUser($user),
+            'token' => $token,
             'new_games' => $newGames,
         ], 201);
     }
@@ -60,11 +60,11 @@ class AuthController extends Controller
     {
         $data = $request->validate(['email' => 'required|email', 'password' => 'required']);
 
-        if (!Auth::attempt($data)) {
+        if (! Auth::attempt($data)) {
             throw ValidationException::withMessages(['email' => ['The provided credentials are incorrect.']]);
         }
 
-        $user  = Auth::user();
+        $user = Auth::user();
         $token = $user->createToken('chesiq')->plainTextToken;
 
         return response()->json(['user' => $this->formatUser($user), 'token' => $token]);
@@ -73,6 +73,7 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json(['message' => 'Logged out']);
     }
 
@@ -83,26 +84,27 @@ class AuthController extends Controller
 
     public function updateUsername(Request $request): JsonResponse
     {
-        $data     = $request->validate(['chess_com_username' => 'required|string|max:50']);
+        $data = $request->validate(['chess_com_username' => 'required|string|max:50']);
         $username = strtolower(trim($data['chess_com_username']));
 
-        if (!$this->chessComUsernameExists($username)) {
+        if (! $this->chessComUsernameExists($username)) {
             return response()->json(['message' => 'chess.com username not found.'], 422);
         }
 
         $request->user()->update(['chess_com_username' => $username]);
+
         return response()->json(['user' => $this->formatUser($request->user()->fresh())]);
     }
 
     private function formatUser(User $user): array
     {
         return [
-            'id'                 => $user->id,
-            'name'               => $user->name,
-            'email'              => $user->email,
-            'is_admin'           => (bool) $user->is_admin,
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => (bool) $user->is_admin,
             'chess_com_username' => $user->chess_com_username,
-            'last_synced_at'     => $user->last_synced_at?->toISOString(),
+            'last_synced_at' => $user->last_synced_at?->toISOString(),
         ];
     }
 
@@ -111,55 +113,68 @@ class AuthController extends Controller
     private function syncGamesForUser(User $user, string $username): int
     {
         $archivesJson = $this->fetchUrl("https://api.chess.com/pub/player/{$username}/games/archives");
-        if (!$archivesJson) return 0;
+        if (! $archivesJson) {
+            return 0;
+        }
 
         $archives = json_decode($archivesJson, true)['archives'] ?? [];
-        if (empty($archives)) return 0;
+        if (empty($archives)) {
+            return 0;
+        }
 
         $newCount = 0;
         foreach (array_slice($archives, -1) as $archiveUrl) {
             $gamesJson = $this->fetchUrl($archiveUrl);
-            if (!$gamesJson) continue;
+            if (! $gamesJson) {
+                continue;
+            }
 
             foreach ((json_decode($gamesJson, true)['games'] ?? []) as $g) {
                 $gameId = basename($g['url'] ?? '');
-                if (!$gameId || Game::where('chess_com_game_id', $gameId)->exists()) continue;
+                if (! $gameId || Game::where('chess_com_game_id', $gameId)->exists()) {
+                    continue;
+                }
 
-                $userColor   = strtolower($g['white']['username'] ?? '') === $username ? 'white' : 'black';
+                $userColor = strtolower($g['white']['username'] ?? '') === $username ? 'white' : 'black';
                 $whiteResult = $g['white']['result'] ?? '';
-                $result      = match (true) {
-                    $userColor === 'white' && $whiteResult === 'win'                                                              => 'win',
-                    $userColor === 'black' && in_array($g['black']['result'] ?? '', ['win'])                                     => 'win',
+                $result = match (true) {
+                    $userColor === 'white' && $whiteResult === 'win' => 'win',
+                    $userColor === 'black' && in_array($g['black']['result'] ?? '', ['win']) => 'win',
                     in_array($whiteResult, ['agreed', 'repetition', 'stalemate', 'insufficient', '50move', 'timevsinsufficient']) => 'draw',
-                    default                                                                                                       => 'loss',
+                    default => 'loss',
                 };
 
-                $pgn         = $g['pgn'] ?? '';
+                $pgn = $g['pgn'] ?? '';
                 $openingName = $this->extractPgnHeader($pgn, 'ECOUrl');
-                if ($openingName) $openingName = ucwords(basename(str_replace('-', ' ', $openingName)));
+                if ($openingName) {
+                    $openingName = ucwords(basename(str_replace('-', ' ', $openingName)));
+                }
 
                 Game::create([
-                    'user_id'           => $user->id,
+                    'user_id' => $user->id,
                     'chess_com_game_id' => $gameId,
-                    'pgn'               => $pgn,
-                    'white_username'    => $g['white']['username'] ?? '',
-                    'black_username'    => $g['black']['username'] ?? '',
-                    'white_rating'      => $g['white']['rating'] ?? null,
-                    'black_rating'      => $g['black']['rating'] ?? null,
-                    'user_color'        => $userColor,
-                    'result'            => $result,
-                    'time_class'        => $g['time_class'] ?? null,
-                    'time_control'      => $g['time_control'] ?? null,
-                    'opening_name'      => $openingName,
-                    'eco_code'          => $this->extractPgnHeader($pgn, 'ECO'),
-                    'move_count'        => $this->countMoves($pgn),
-                    'played_at'         => isset($g['end_time']) ? date('Y-m-d H:i:s', $g['end_time']) : null,
+                    'pgn' => $pgn,
+                    'white_username' => $g['white']['username'] ?? '',
+                    'black_username' => $g['black']['username'] ?? '',
+                    'white_rating' => $g['white']['rating'] ?? null,
+                    'black_rating' => $g['black']['rating'] ?? null,
+                    'user_color' => $userColor,
+                    'result' => $result,
+                    'time_class' => $g['time_class'] ?? null,
+                    'time_control' => $g['time_control'] ?? null,
+                    'opening_name' => $openingName,
+                    'eco_code' => $this->extractPgnHeader($pgn, 'ECO'),
+                    'move_count' => $this->countMoves($pgn),
+                    'played_at' => isset($g['end_time']) ? date('Y-m-d H:i:s', $g['end_time']) : null,
                 ]);
                 $newCount++;
             }
         }
 
-        if ($newCount > 0) $user->update(['last_synced_at' => now()]);
+        if ($newCount > 0) {
+            $user->update(['last_synced_at' => now()]);
+        }
+
         return $newCount;
     }
 
@@ -167,13 +182,16 @@ class AuthController extends Controller
     {
         try {
             $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(10)->get($url);
-            if (!$resp->successful()) {
+            if (! $resp->successful()) {
                 Log::warning('chess.com fetch non-success', ['url' => $url, 'status' => $resp->status()]);
+
                 return false;
             }
+
             return $resp->body();
         } catch (\Throwable $e) {
             Log::warning('chess.com fetch failed', ['url' => $url, 'error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -183,15 +201,17 @@ class AuthController extends Controller
         // Cache positive and negative results for 1 hour to limit how quickly an
         // attacker can enumerate chess.com usernames through our endpoints.
         return Cache::remember(
-            "chesscom:exists:" . strtolower($username),
+            'chesscom:exists:'.strtolower($username),
             now()->addHour(),
             function () use ($username): bool {
                 try {
                     $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(5)
                         ->get("https://api.chess.com/pub/player/{$username}");
+
                     return $resp->successful() && is_array($resp->json());
                 } catch (\Throwable $e) {
                     Log::warning('chess.com username lookup failed', ['username' => $username, 'error' => $e->getMessage()]);
+
                     return false;
                 }
             }
@@ -200,13 +220,17 @@ class AuthController extends Controller
 
     private function extractPgnHeader(string $pgn, string $key): ?string
     {
-        if (preg_match('/\[' . preg_quote($key, '/') . '\s+"([^"]+)"\]/', $pgn, $m)) return $m[1];
+        if (preg_match('/\['.preg_quote($key, '/').'\s+"([^"]+)"\]/', $pgn, $m)) {
+            return $m[1];
+        }
+
         return null;
     }
 
     private function countMoves(string $pgn): int
     {
         preg_match_all('/\d+\.(?!\.)/', $pgn, $m);
+
         return count($m[0]);
     }
 }

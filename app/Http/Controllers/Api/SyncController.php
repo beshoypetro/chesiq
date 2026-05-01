@@ -15,7 +15,7 @@ class SyncController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->chess_com_username) {
+        if (! $user->chess_com_username) {
             return response()->json(['message' => 'No chess.com username linked.'], 422);
         }
 
@@ -23,7 +23,7 @@ class SyncController extends Controller
 
         // Get list of monthly archive URLs
         $archivesJson = $this->fetchUrl("https://api.chess.com/pub/player/{$username}/games/archives");
-        if (!$archivesJson) {
+        if (! $archivesJson) {
             return response()->json(['message' => 'Could not reach chess.com API.'], 502);
         }
 
@@ -38,13 +38,15 @@ class SyncController extends Controller
 
         foreach ($recentArchives as $archiveUrl) {
             $gamesJson = $this->fetchUrl($archiveUrl);
-            if (!$gamesJson) continue;
+            if (! $gamesJson) {
+                continue;
+            }
 
             $games = json_decode($gamesJson, true)['games'] ?? [];
 
             foreach ($games as $g) {
                 $gameId = basename($g['url'] ?? '');
-                if (!$gameId || Game::where('chess_com_game_id', $gameId)->exists()) {
+                if (! $gameId || Game::where('chess_com_game_id', $gameId)->exists()) {
                     continue;
                 }
 
@@ -66,21 +68,21 @@ class SyncController extends Controller
                 }
 
                 Game::create([
-                    'user_id'           => $user->id,
+                    'user_id' => $user->id,
                     'chess_com_game_id' => $gameId,
-                    'pgn'               => $pgn,
-                    'white_username'    => $g['white']['username'] ?? '',
-                    'black_username'    => $g['black']['username'] ?? '',
-                    'white_rating'      => $g['white']['rating'] ?? null,
-                    'black_rating'      => $g['black']['rating'] ?? null,
-                    'user_color'        => $userColor,
-                    'result'            => $result,
-                    'time_class'        => $g['time_class'] ?? null,
-                    'time_control'      => $g['time_control'] ?? null,
-                    'opening_name'      => $openingName,
-                    'eco_code'          => $this->extractPgnHeader($pgn, 'ECO'),
-                    'move_count'        => $this->countMoves($pgn),
-                    'played_at'         => isset($g['end_time']) ? date('Y-m-d H:i:s', $g['end_time']) : null,
+                    'pgn' => $pgn,
+                    'white_username' => $g['white']['username'] ?? '',
+                    'black_username' => $g['black']['username'] ?? '',
+                    'white_rating' => $g['white']['rating'] ?? null,
+                    'black_rating' => $g['black']['rating'] ?? null,
+                    'user_color' => $userColor,
+                    'result' => $result,
+                    'time_class' => $g['time_class'] ?? null,
+                    'time_control' => $g['time_control'] ?? null,
+                    'opening_name' => $openingName,
+                    'eco_code' => $this->extractPgnHeader($pgn, 'ECO'),
+                    'move_count' => $this->countMoves($pgn),
+                    'played_at' => isset($g['end_time']) ? date('Y-m-d H:i:s', $g['end_time']) : null,
                 ]);
 
                 $newCount++;
@@ -91,7 +93,7 @@ class SyncController extends Controller
 
         return response()->json([
             'new_games' => $newCount,
-            'message'   => $newCount > 0 ? "{$newCount} new game(s) synced." : 'Already up to date.',
+            'message' => $newCount > 0 ? "{$newCount} new game(s) synced." : 'Already up to date.',
         ]);
     }
 
@@ -99,28 +101,33 @@ class SyncController extends Controller
     {
         try {
             $resp = Http::withHeaders(['User-Agent' => 'Chesiq/1.0'])->timeout(10)->get($url);
-            if (!$resp->successful()) {
+            if (! $resp->successful()) {
                 Log::warning('chess.com sync fetch non-success', ['url' => $url, 'status' => $resp->status()]);
+
                 return false;
             }
+
             return $resp->body();
         } catch (\Throwable $e) {
             Log::warning('chess.com sync fetch failed', ['url' => $url, 'error' => $e->getMessage()]);
+
             return false;
         }
     }
 
     private function extractPgnHeader(string $pgn, string $key): ?string
     {
-        if (preg_match('/\[' . preg_quote($key, '/') . '\s+"([^"]+)"\]/', $pgn, $m)) {
+        if (preg_match('/\['.preg_quote($key, '/').'\s+"([^"]+)"\]/', $pgn, $m)) {
             return $m[1];
         }
+
         return null;
     }
 
     private function countMoves(string $pgn): int
     {
         preg_match_all('/\d+\.(?!\.)/', $pgn, $m);
+
         return count($m[0]);
     }
 }

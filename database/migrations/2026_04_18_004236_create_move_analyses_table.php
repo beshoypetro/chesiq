@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('best_move_san')->nullable();
             $table->enum('classification', [
                 'brilliant', 'best', 'excellent', 'good',
-                'inaccuracy', 'mistake', 'blunder', 'miss'
+                'inaccuracy', 'mistake', 'blunder', 'miss',
             ])->nullable();
             $table->integer('cp_loss')->nullable();
             $table->integer('eval_before')->nullable();

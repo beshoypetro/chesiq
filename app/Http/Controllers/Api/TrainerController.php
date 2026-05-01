@@ -10,7 +10,6 @@ use App\Services\GeminiCoachService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class TrainerController extends Controller
@@ -20,20 +19,20 @@ class TrainerController extends Controller
     public function plan(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
-        $now    = now();
+        $now = now();
 
         $progress = LineProgress::where('user_id', $userId)
             ->orderByRaw('CASE WHEN next_due_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('next_due_at')
             ->get()
             ->map(fn ($p) => [
-                'line_id'      => $p->line_id,
-                'mastery'      => round($p->mastery, 2),
-                'attempts'     => $p->attempts,
-                'correct'      => $p->correct,
+                'line_id' => $p->line_id,
+                'mastery' => round($p->mastery, 2),
+                'attempts' => $p->attempts,
+                'correct' => $p->correct,
                 'last_seen_at' => $p->last_seen_at?->toISOString(),
-                'next_due_at'  => $p->next_due_at?->toISOString(),
-                'is_due'       => $p->next_due_at === null || $p->next_due_at->lte($now),
+                'next_due_at' => $p->next_due_at?->toISOString(),
+                'is_due' => $p->next_due_at === null || $p->next_due_at->lte($now),
             ]);
 
         $rationaledLineIds = MoveRationale::select('line_id')->distinct()->pluck('line_id');
@@ -43,15 +42,15 @@ class TrainerController extends Controller
             ->first();
 
         return response()->json([
-            'progress'              => $progress,
-            'rationaled_line_ids'   => $rationaledLineIds,
-            'last_session'          => $lastSession ? [
-                'ended_at'       => $lastSession->ended_at?->toISOString(),
-                'correct_moves'  => $lastSession->correct_moves,
-                'total_moves'    => $lastSession->total_moves,
-                'lines_covered'  => $lastSession->lines_covered,
+            'progress' => $progress,
+            'rationaled_line_ids' => $rationaledLineIds,
+            'last_session' => $lastSession ? [
+                'ended_at' => $lastSession->ended_at?->toISOString(),
+                'correct_moves' => $lastSession->correct_moves,
+                'total_moves' => $lastSession->total_moves,
+                'lines_covered' => $lastSession->lines_covered,
                 'lines_mastered' => $lastSession->lines_mastered,
-                'summary_text'   => $lastSession->summary_text,
+                'summary_text' => $lastSession->summary_text,
             ] : null,
         ]);
     }
@@ -72,7 +71,7 @@ class TrainerController extends Controller
                 ->all();
             $missing = array_values(array_diff($studentIndices, $existingIndices));
 
-            if (!empty($missing)) {
+            if (! empty($missing)) {
                 $generated = $coach->generateLineRationales($catalog, $missing);
                 foreach ($generated as $g) {
                     MoveRationale::updateOrCreate(
@@ -93,14 +92,14 @@ class TrainerController extends Controller
             ->first();
 
         return response()->json([
-            'line_id'    => $lineId,
+            'line_id' => $lineId,
             'rationales' => $rationales,
-            'progress'   => $progress ? [
-                'mastery'      => round($progress->mastery, 2),
-                'attempts'     => $progress->attempts,
-                'correct'      => $progress->correct,
+            'progress' => $progress ? [
+                'mastery' => round($progress->mastery, 2),
+                'attempts' => $progress->attempts,
+                'correct' => $progress->correct,
                 'last_seen_at' => $progress->last_seen_at?->toISOString(),
-                'next_due_at'  => $progress->next_due_at?->toISOString(),
+                'next_due_at' => $progress->next_due_at?->toISOString(),
             ] : null,
         ]);
     }
@@ -118,17 +117,20 @@ class TrainerController extends Controller
                 'black' => $i % 2 === 1,
                 default => true,
             };
-            if ($isStudent) $out[] = $i;
+            if ($isStudent) {
+                $out[] = $i;
+            }
         }
+
         return $out;
     }
 
     public function attempt(Request $request): JsonResponse
     {
         $v = $request->validate([
-            'line_id'    => 'required|string|max:64',
+            'line_id' => 'required|string|max:64',
             'move_index' => 'required|integer|min:0|max:200',
-            'correct'    => 'required|boolean',
+            'correct' => 'required|boolean',
         ]);
 
         // If we have a catalog entry for this line, enforce move_index is within bounds.
@@ -137,7 +139,7 @@ class TrainerController extends Controller
         if ($catalog && $v['move_index'] >= count($catalog->moves)) {
             return response()->json([
                 'message' => 'move_index out of range for this line.',
-                'errors'  => ['move_index' => ['Move index exceeds line length.']],
+                'errors' => ['move_index' => ['Move index exceeds line length.']],
             ], 422);
         }
 
@@ -161,8 +163,8 @@ class TrainerController extends Controller
     public function completeLine(Request $request, string $lineId): JsonResponse
     {
         $v = $request->validate([
-            'correct'    => 'required|integer|min:0|max:100|lte:total',
-            'total'      => 'required|integer|min:1|max:100',
+            'correct' => 'required|integer|min:0|max:100|lte:total',
+            'total' => 'required|integer|min:1|max:100',
             'session_id' => 'nullable|integer',
         ]);
 
@@ -171,11 +173,11 @@ class TrainerController extends Controller
         if ($catalog && $v['total'] > count($catalog->moves)) {
             return response()->json([
                 'message' => 'total exceeds the line length on record.',
-                'errors'  => ['total' => ['Total cannot exceed the number of moves in this line.']],
+                'errors' => ['total' => ['Total cannot exceed the number of moves in this line.']],
             ], 422);
         }
 
-        $userId   = $request->user()->id;
+        $userId = $request->user()->id;
         $accuracy = $v['total'] > 0 ? $v['correct'] / $v['total'] : 0;
 
         $progress = LineProgress::firstOrCreate(
@@ -183,13 +185,13 @@ class TrainerController extends Controller
             ['mastery' => 0]
         );
 
-        $delta    = ($accuracy - 0.5) * 0.4;
-        $mastery  = max(0, min(1, $progress->mastery + $delta));
+        $delta = ($accuracy - 0.5) * 0.4;
+        $mastery = max(0, min(1, $progress->mastery + $delta));
         $interval = (int) ceil($mastery * 14);
 
-        $progress->mastery      = $mastery;
+        $progress->mastery = $mastery;
         $progress->last_seen_at = now();
-        $progress->next_due_at  = now()->addDays(max(1, $interval));
+        $progress->next_due_at = now()->addDays(max(1, $interval));
         $progress->save();
 
         if (! empty($v['session_id'])) {
@@ -200,40 +202,40 @@ class TrainerController extends Controller
                     $session->lines_mastered = $session->lines_mastered + 1;
                 }
                 $session->correct_moves = $session->correct_moves + $v['correct'];
-                $session->total_moves   = $session->total_moves + $v['total'];
+                $session->total_moves = $session->total_moves + $v['total'];
                 $session->save();
             }
         }
 
         return response()->json([
-            'mastery'     => round($mastery, 2),
+            'mastery' => round($mastery, 2),
             'next_due_at' => $progress->next_due_at?->toISOString(),
-            'mastered'    => $mastery >= 0.85,
+            'mastered' => $mastery >= 0.85,
         ]);
     }
 
     public function coach(Request $request, GeminiCoachService $coach): JsonResponse
     {
         $v = $request->validate([
-            'line_id'       => 'required|string|max:64',
-            'line_name'     => 'nullable|string|max:80',
-            'opening_name'  => 'nullable|string|max:80',
-            'fen'           => 'required|string|max:100',
+            'line_id' => 'required|string|max:64',
+            'line_name' => 'nullable|string|max:80',
+            'opening_name' => 'nullable|string|max:80',
+            'fen' => 'required|string|max:100',
             'attempted_san' => 'required|string|max:20',
-            'expected_san'  => 'nullable|string|max:20',
-            'move_index'    => 'required|integer|min:0',
-            'move_number'   => 'nullable|integer',
-            'color'         => 'nullable|string|in:white,black',
-            'correct'       => 'required|boolean',
+            'expected_san' => 'nullable|string|max:20',
+            'move_index' => 'required|integer|min:0',
+            'move_number' => 'nullable|integer',
+            'color' => 'nullable|string|in:white,black',
+            'correct' => 'required|boolean',
         ]);
 
         $userId = $request->user()->id;
-        $dayKey = "coach_daily:{$userId}:" . now()->format('Y-m-d');
-        $count  = (int) Cache::get($dayKey, 0);
+        $dayKey = "coach_daily:{$userId}:".now()->format('Y-m-d');
+        $count = (int) Cache::get($dayKey, 0);
         if ($count >= self::DAILY_COACH_CAP) {
             return response()->json([
-                'text'     => "We've hit today's coaching limit — but keep playing, I'll be back tomorrow.",
-                'quota'    => ['used' => $count, 'cap' => self::DAILY_COACH_CAP],
+                'text' => "We've hit today's coaching limit — but keep playing, I'll be back tomorrow.",
+                'quota' => ['used' => $count, 'cap' => self::DAILY_COACH_CAP],
                 'rate_limit' => true,
             ], 429);
         }
@@ -247,7 +249,7 @@ class TrainerController extends Controller
     public function startSession(Request $request): JsonResponse
     {
         $session = TrainingSession::create([
-            'user_id'    => $request->user()->id,
+            'user_id' => $request->user()->id,
             'started_at' => now(),
         ]);
 
@@ -275,14 +277,14 @@ class TrainerController extends Controller
         $session->save();
 
         return response()->json([
-            'session_id'     => $session->id,
-            'ended_at'       => $session->ended_at?->toISOString(),
-            'lines_covered'  => $session->lines_covered,
+            'session_id' => $session->id,
+            'ended_at' => $session->ended_at?->toISOString(),
+            'lines_covered' => $session->lines_covered,
             'lines_mastered' => $session->lines_mastered,
-            'correct_moves'  => $session->correct_moves,
-            'total_moves'    => $session->total_moves,
-            'accuracy'       => $accuracy,
-            'summary_text'   => $session->summary_text,
+            'correct_moves' => $session->correct_moves,
+            'total_moves' => $session->total_moves,
+            'accuracy' => $accuracy,
+            'summary_text' => $session->summary_text,
         ]);
     }
 }

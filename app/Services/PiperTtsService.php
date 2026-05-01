@@ -33,7 +33,7 @@ class PiperTtsService
      */
     public function synthesize(string $text, ?string $voice = null): ?string
     {
-        $text  = trim($text);
+        $text = trim($text);
         $voice = $this->sanitizeVoice($voice ?? self::DEFAULT_VOICE);
         if ($text === '' || mb_strlen($text) > self::MAX_TEXT_LENGTH) {
             return null;
@@ -45,12 +45,12 @@ class PiperTtsService
         }
 
         $binary = $this->binaryPath();
-        $model  = $this->modelPath($voice);
+        $model = $this->modelPath($voice);
         if (! $binary || ! $model) {
             return null;
         }
 
-        $tmp = tempnam(sys_get_temp_dir(), 'piper-') . '.wav';
+        $tmp = tempnam(sys_get_temp_dir(), 'piper-').'.wav';
 
         try {
             $process = new Process([
@@ -65,20 +65,23 @@ class PiperTtsService
         } catch (ProcessTimedOutException $e) {
             Log::warning('Piper synthesis timeout', ['voice' => $voice, 'len' => mb_strlen($text)]);
             @unlink($tmp);
+
             return null;
         } catch (\Throwable $e) {
             Log::warning('Piper synthesis process error', ['error' => $e->getMessage()]);
             @unlink($tmp);
+
             return null;
         }
 
         if (! $process->isSuccessful() || ! is_file($tmp) || filesize($tmp) === 0) {
             Log::warning('Piper synthesis non-success', [
-                'exit'    => $process->getExitCode(),
-                'stderr'  => mb_substr($process->getErrorOutput(), 0, 500),
-                'voice'   => $voice,
+                'exit' => $process->getExitCode(),
+                'stderr' => mb_substr($process->getErrorOutput(), 0, 500),
+                'voice' => $voice,
             ]);
             @unlink($tmp);
+
             return null;
         }
 
@@ -87,7 +90,7 @@ class PiperTtsService
 
         // Write cache atomically so concurrent requests don't race
         @mkdir(dirname($cachePath), 0775, true);
-        $cacheTmp = $cachePath . '.tmp.' . bin2hex(random_bytes(4));
+        $cacheTmp = $cachePath.'.tmp.'.bin2hex(random_bytes(4));
         if (@file_put_contents($cacheTmp, $bytes) !== false) {
             @rename($cacheTmp, $cachePath);
         } else {
@@ -110,22 +113,27 @@ class PiperTtsService
             base_path('piper/piper'),
         ];
         foreach ($candidates as $path) {
-            if (is_file($path)) return $path;
+            if (is_file($path)) {
+                return $path;
+            }
         }
+
         return null;
     }
 
     private function modelPath(string $voice): ?string
     {
         $path = base_path("piper/voices/{$voice}.onnx");
+
         return is_file($path) ? $path : null;
     }
 
     private function cachePathFor(string $voice, string $text): string
     {
-        $hash = hash('sha256', $voice . '|' . $text);
+        $hash = hash('sha256', $voice.'|'.$text);
+
         // Split into 2-char shards so a single dir doesn't accumulate 100k files
-        return storage_path("app/tts-cache/{$voice}/" . substr($hash, 0, 2) . "/{$hash}.wav");
+        return storage_path("app/tts-cache/{$voice}/".substr($hash, 0, 2)."/{$hash}.wav");
     }
 
     private function sanitizeVoice(string $voice): string

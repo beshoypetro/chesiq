@@ -27,16 +27,17 @@ class Game extends Model
         'move_count',
         'played_at',
         'analyzed_at',
+        'source',
     ];
 
     protected $casts = [
-        'played_at'      => 'datetime',
-        'analyzed_at'    => 'datetime',
+        'played_at' => 'datetime',
+        'analyzed_at' => 'datetime',
         'white_accuracy' => 'float',
         'black_accuracy' => 'float',
-        'white_rating'   => 'integer',
-        'black_rating'   => 'integer',
-        'move_count'     => 'integer',
+        'white_rating' => 'integer',
+        'black_rating' => 'integer',
+        'move_count' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -54,6 +55,7 @@ class Game extends Model
         if ($this->user_color === 'white') {
             return $this->white_accuracy;
         }
+
         return $this->black_accuracy;
     }
 }

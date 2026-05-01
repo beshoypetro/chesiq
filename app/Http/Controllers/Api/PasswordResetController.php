@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 
 class PasswordResetController extends Controller
@@ -23,11 +23,12 @@ class PasswordResetController extends Controller
         if (app()->environment('local') && config('mail.default') === 'log') {
             $user = User::where('email', $request->email)->first();
             if ($user) {
-                $token     = Password::createToken($user);
-                $frontend  = rtrim(env('FRONTEND_URL', 'http://localhost:8080'), '/');
-                $resetUrl  = "{$frontend}/reset-password?token={$token}&email=" . urlencode($user->email);
+                $token = Password::createToken($user);
+                $frontend = rtrim(env('FRONTEND_URL', 'http://localhost:8080'), '/');
+                $resetUrl = "{$frontend}/reset-password?token={$token}&email=".urlencode($user->email);
+
                 return response()->json([
-                    'message'       => 'Dev mode: email is logged, use the direct reset URL below.',
+                    'message' => 'Dev mode: email is logged, use the direct reset URL below.',
                     'dev_reset_url' => $resetUrl,
                 ]);
             }
@@ -48,16 +49,16 @@ class PasswordResetController extends Controller
     public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
-            'token'                 => 'required',
-            'email'                 => 'required|email',
-            'password'              => 'required|string|min:8|confirmed',
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill(['password' => Hash::make($password)])
-                     ->setRememberToken(Str::random(60));
+                    ->setRememberToken(Str::random(60));
                 $user->save();
                 event(new PasswordReset($user));
             }

@@ -13,10 +13,10 @@ class AdminController extends Controller
 {
     public function dashboard(): JsonResponse
     {
-        $totalUsers    = User::count();
-        $totalGames    = Game::count();
+        $totalUsers = User::count();
+        $totalGames = Game::count();
         $analyzedGames = Game::whereNotNull('analyzed_at')->count();
-        $avgAccuracy   = Game::whereNotNull('white_accuracy')
+        $avgAccuracy = Game::whereNotNull('white_accuracy')
             ->selectRaw('AVG((white_accuracy + black_accuracy) / 2) as avg')
             ->value('avg');
 
@@ -25,32 +25,32 @@ class AdminController extends Controller
             ->whereNotNull('time_class')
             ->pluck('count', 'time_class');
 
-        $recentUsers = User::latest()->take(10)->get()->map(fn($u) => [
-            'id'                 => $u->id,
-            'name'               => $u->name,
-            'email'              => $u->email,
-            'is_admin'           => (bool) $u->is_admin,
+        $recentUsers = User::latest()->take(10)->get()->map(fn ($u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'email' => $u->email,
+            'is_admin' => (bool) $u->is_admin,
             'chess_com_username' => $u->chess_com_username,
-            'games_count'        => $u->games()->count(),
-            'analyzed_count'     => $u->games()->whereNotNull('analyzed_at')->count(),
-            'created_at'         => $u->created_at?->toISOString(),
-            'last_synced_at'     => $u->last_synced_at?->toISOString(),
+            'games_count' => $u->games()->count(),
+            'analyzed_count' => $u->games()->whereNotNull('analyzed_at')->count(),
+            'created_at' => $u->created_at?->toISOString(),
+            'last_synced_at' => $u->last_synced_at?->toISOString(),
         ]);
 
         $recentGames = Game::with('user')
             ->latest('played_at')
             ->take(10)
             ->get()
-            ->map(fn($g) => [
-                'id'            => $g->id,
-                'user_name'     => $g->user?->name,
-                'white'         => $g->white_username,
-                'black'         => $g->black_username,
-                'result'        => $g->result,
-                'time_class'    => $g->time_class,
-                'analyzed'      => !!$g->analyzed_at,
+            ->map(fn ($g) => [
+                'id' => $g->id,
+                'user_name' => $g->user?->name,
+                'white' => $g->white_username,
+                'black' => $g->black_username,
+                'result' => $g->result,
+                'time_class' => $g->time_class,
+                'analyzed' => (bool) $g->analyzed_at,
                 'user_accuracy' => $g->user_color === 'white' ? $g->white_accuracy : $g->black_accuracy,
-                'played_at'     => $g->played_at?->toISOString(),
+                'played_at' => $g->played_at?->toISOString(),
             ]);
 
         $moveStats = MoveAnalysis::selectRaw('classification, COUNT(*) as count')
@@ -60,14 +60,14 @@ class AdminController extends Controller
 
         return response()->json([
             'data' => [
-                'total_users'        => $totalUsers,
-                'total_games'        => $totalGames,
-                'analyzed_games'     => $analyzedGames,
-                'avg_accuracy'       => $avgAccuracy ? round($avgAccuracy, 1) : null,
-                'games_by_time'      => $gamesByTimeClass,
-                'move_stats'         => $moveStats,
-                'recent_users'       => $recentUsers,
-                'recent_games'       => $recentGames,
+                'total_users' => $totalUsers,
+                'total_games' => $totalGames,
+                'analyzed_games' => $analyzedGames,
+                'avg_accuracy' => $avgAccuracy ? round($avgAccuracy, 1) : null,
+                'games_by_time' => $gamesByTimeClass,
+                'move_stats' => $moveStats,
+                'recent_users' => $recentUsers,
+                'recent_games' => $recentGames,
             ],
         ]);
     }
@@ -78,26 +78,26 @@ class AdminController extends Controller
 
         if ($request->filled('search')) {
             $s = $request->search;
-            $query->where(fn($q) => $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('chess_com_username', 'like', "%{$s}%"));
+            $query->where(fn ($q) => $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('chess_com_username', 'like', "%{$s}%"));
         }
 
         $users = $query->latest()->paginate(20);
 
         return response()->json([
-            'data' => $users->map(fn($u) => [
-                'id'                 => $u->id,
-                'name'               => $u->name,
-                'email'              => $u->email,
-                'is_admin'           => (bool) $u->is_admin,
+            'data' => $users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'is_admin' => (bool) $u->is_admin,
                 'chess_com_username' => $u->chess_com_username,
-                'games_count'        => $u->games_count,
-                'created_at'         => $u->created_at?->toISOString(),
-                'last_synced_at'     => $u->last_synced_at?->toISOString(),
+                'games_count' => $u->games_count,
+                'created_at' => $u->created_at?->toISOString(),
+                'last_synced_at' => $u->last_synced_at?->toISOString(),
             ]),
             'meta' => [
-                'total'        => $users->total(),
+                'total' => $users->total(),
                 'current_page' => $users->currentPage(),
-                'last_page'    => $users->lastPage(),
+                'last_page' => $users->lastPage(),
             ],
         ]);
     }
@@ -108,10 +108,10 @@ class AdminController extends Controller
             return response()->json(['message' => 'Cannot change your own admin status.'], 422);
         }
 
-        $user->update(['is_admin' => !$user->is_admin]);
+        $user->update(['is_admin' => ! $user->is_admin]);
 
         return response()->json([
-            'message'  => $user->is_admin ? 'User promoted to admin.' : 'Admin rights revoked.',
+            'message' => $user->is_admin ? 'User promoted to admin.' : 'Admin rights revoked.',
             'is_admin' => $user->is_admin,
         ]);
     }
@@ -123,6 +123,7 @@ class AdminController extends Controller
         }
 
         $user->delete();
+
         return response()->json(['message' => 'User deleted.']);
     }
 }

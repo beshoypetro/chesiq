@@ -5,22 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TrainingSession extends Model
+class VisionScore extends Model
 {
+    public $timestamps = false;
+
     protected $fillable = [
         'user_id',
-        'started_at',
-        'ended_at',
-        'lines_covered',
-        'lines_mastered',
-        'correct_moves',
-        'total_moves',
-        'summary_text',
+        'drill_type',
+        'score',
+        'accuracy',
+        'created_at',
     ];
 
     protected $casts = [
-        'started_at' => 'datetime',
-        'ended_at' => 'datetime',
+        'score' => 'integer',
+        'accuracy' => 'float',
+        'created_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
