@@ -113,11 +113,11 @@ class GameController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // $moveIndex is a 1-based ply count (half-moves).
+        // $moveIndex is a 0-based ply index (half-moves).
         // move_analyses stores full move numbers (1-based) and color.
-        // ply 1 = white move 1, ply 2 = black move 1, ply 3 = white move 2, etc.
-        $fullMoveNumber = (int) floor(($moveIndex - 1) / 2) + 1;
-        $color = ($moveIndex % 2 === 1) ? 'white' : 'black';
+        // ply 0 = white move 1, ply 1 = black move 1, ply 2 = white move 2, etc.
+        $fullMoveNumber = intdiv($moveIndex, 2) + 1;
+        $color = ($moveIndex % 2 === 0) ? 'white' : 'black';
 
         $move = $game->moveAnalyses()
             ->where('move_number', $fullMoveNumber)

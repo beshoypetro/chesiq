@@ -143,12 +143,12 @@ class RepertoireController extends Controller
             if ($repetitions === 0 || $interval <= 1) {
                 // Never successfully reviewed or interval was reset
                 $status = 'red';
+            } elseif ($dueAt && now()->diffInDays($dueAt, false) <= 7) {
+                // Due within 7 days — needs review soon
+                $status = 'yellow';
             } elseif ($interval > 7) {
                 // Well-reviewed — not due for more than 7 days
                 $status = 'green';
-            } elseif ($dueAt && now()->diffInDays($dueAt, false) <= 7) {
-                // Due within 7 days
-                $status = 'yellow';
             } else {
                 $status = 'green';
             }
