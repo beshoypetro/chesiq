@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\OpeningRepetition;
 use App\Models\Repertoire;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,6 +93,63 @@ class RepertoireController extends Controller
         return response($pgn, 200, [
             'Content-Type' => 'application/x-chess-pgn',
             'Content-Disposition' => 'attachment; filename="' . preg_replace('/[^a-z0-9]/i', '_', $rep->name) . '.pgn"',
+        ]);
+    }
+
+    /**
+     * F027: Return the repertoire tree annotated with SR (spaced repetition) status per node.
+     * Status: green = interval > 30 days, yellow = due soon (<=7 days), red = never attempted.
+     */
+    public function coverage(Request $request, int $id): JsonResponse
+    {
+        $rep = Repertoire::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $userId = $request->user()->id;
+        $openingKey = 'repertoire_' . $id;
+
+        // Load all SR records for this repertoire
+        $srRecords = OpeningRepetition::where('user_id', $userId)
+            ->where('opening_key', $openingKey)
+            ->get()
+            ->keyBy('move_uci');
+
+        $tree = json_decode($rep->tree_json, true) ?? [];
+        $annotated = $this->annotateTree($tree, $srRecords->toArray());
+
+        return response()->json([
+            'repertoire_id' => $id,
+            'tree' => $annotated,
+        ]);
+    }
+
+    private function annotateTree(array $node, array $srByUci): array
+    {
+        $children = $node['children'] ?? $node['moves'] ?? [];
+        $annotatedChildren = [];
+        foreach ($children as $child) {
+            $annotatedChildren[] = $this->annotateTree($child, $srByUci);
+        }
+
+        $uci = $node['uci'] ?? $node['move'] ?? null;
+        $status = 'red'; // never attempted
+        if ($uci && isset($srByUci[$uci])) {
+            $sr = $srByUci[$uci];
+            $interval = $sr['interval_days'] ?? 0;
+            $dueAt = $sr['due_at'] ?? null;
+            if ($interval > 30) {
+                $status = 'green';
+            } elseif ($dueAt && now()->diffInDays($dueAt, false) > 7) {
+                $status = 'green';
+            } else {
+                $status = 'yellow';
+            }
+        }
+
+        return array_merge($node, [
+            'sr_status' => $status,
+            'children' => $annotatedChildren,
         ]);
     }
 
