@@ -44,6 +44,10 @@ return [
         // 2.5-flash is current free tier on the project attached to our key;
         // 2.0-flash was showing "limit: 0" in quota responses. Override with GEMINI_MODEL env if needed.
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        // Tiered model: heavier verdicts (blunder/mistake/brilliant/miss) and
+        // game summaries route here. Leave empty to disable the upgrade and
+        // use 'model' for everything.
+        'pro_model' => env('GEMINI_PRO_MODEL') ?: null,
     ],
 
 ];

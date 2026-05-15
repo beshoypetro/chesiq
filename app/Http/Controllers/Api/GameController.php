@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeFailurePatterns;
 use App\Models\Game;
+use App\Models\Lesson;
 use App\Models\MoveAnalysis;
 use App\Models\Repertoire;
+use App\Services\CoachContextService;
+use App\Services\GeminiCoachService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -103,6 +107,8 @@ class GameController extends Controller
             'black_accuracy' => $data['black_accuracy'] ?? null,
             'analyzed_at' => now(),
         ]);
+
+        AnalyzeFailurePatterns::dispatch($game->id);
 
         return response()->json(['message' => 'Analysis saved.']);
     }
@@ -218,6 +224,83 @@ class GameController extends Controller
         $level->update(['skill_level' => $newSkill, 'elo_estimate' => $newElo, 'updated_at' => now()]);
 
         return response()->json(['skill_level' => $newSkill, 'elo_estimate' => $newElo]);
+    }
+
+    /**
+     * T2.8 — Three-bullet end-of-game synthesis: top theme, biggest missed
+     * idea, drill recommendation. T4.13 — Suggests one matching lesson if
+     * the drill_motif tag overlaps a lesson theme.
+     */
+    public function coachSummary(
+        Request $request,
+        Game $game,
+        GeminiCoachService $coach,
+        CoachContextService $ctxSvc,
+    ): JsonResponse {
+        if ($game->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+        $user = $request->user();
+
+        // Notable moves the LLM should ground on — the actual mistakes worth
+        // reviewing, sorted by severity. Cap at 8 so we don't blow the prompt.
+        $notable = $game->moveAnalyses()
+            ->whereIn('classification', ['blunder', 'mistake', 'miss', 'inaccuracy'])
+            ->orderByRaw("CASE classification
+                WHEN 'blunder' THEN 1
+                WHEN 'miss' THEN 2
+                WHEN 'mistake' THEN 3
+                ELSE 4 END")
+            ->orderByDesc('cp_loss')
+            ->limit(8)
+            ->get(['move_number', 'color', 'classification', 'move_san', 'best_move_san', 'cp_loss'])
+            ->map(fn ($m) => [
+                'move_number' => $m->move_number,
+                'color' => $m->color,
+                'classification' => $m->classification,
+                'san' => $m->move_san,
+                'best_move_san' => $m->best_move_san,
+                'cp_loss' => $m->cp_loss,
+            ])
+            ->all();
+
+        $ephemeral = $ctxSvc->ephemeralUserContext($user);
+        $stable = $ctxSvc->stableUserContext($user);
+
+        $summary = $coach->gameSummary([
+            'game_id' => $game->id,
+            'user_id' => $user->id,
+            'opening_name' => $game->opening_name,
+            'user_color' => $game->user_color,
+            'user_accuracy' => $game->user_accuracy,
+            'result' => $game->result,
+            'notable_moves' => $notable,
+        ] + $ephemeral + $stable);
+
+        // T4.13 — Pattern-match the LLM's drill_motif tag onto Lesson.theme.
+        $lesson = null;
+        if (! empty($summary['drill_motif'])) {
+            $lesson = Lesson::query()
+                ->where('theme', 'like', '%' . str_replace('-', '%', (string) $summary['drill_motif']) . '%')
+                ->first();
+        }
+
+        // Surface the worst-move location to the client. Drill seeding (which
+        // needs a chess engine to compute the FEN at that ply) is done
+        // client-side — see games_.$gameId.tsx coachSummary panel.
+        $worst = $notable[0] ?? null;
+
+        return response()->json([
+            'data' => $summary + [
+                'lesson' => $lesson ? [
+                    'id' => $lesson->id,
+                    'title' => $lesson->title,
+                    'theme' => $lesson->theme,
+                    'level' => $lesson->level,
+                ] : null,
+                'worst_move' => $worst,
+            ],
+        ]);
     }
 
     private function formatGame(Game $game): array

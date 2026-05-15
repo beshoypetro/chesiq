@@ -3,7 +3,15 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\AnnotationController;
+use App\Http\Controllers\Api\AcademyController;
+use App\Http\Controllers\Api\AssessmentController;
+use App\Http\Controllers\Api\ChessDnaController;
+use App\Http\Controllers\Api\DailyReviewController;
+use App\Http\Controllers\Api\HomeworkController;
+use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\TelemetryController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\CommentaryController;
 use App\Http\Controllers\Api\DatabaseController;
 use App\Http\Controllers\Api\DigestController;
@@ -63,6 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/training/coach', [TrainerController::class,    'coach']);
         // F005: In-game hint
         Route::post('/chess/hint', [HintController::class, 'hint']);
+        // T3.9: conversational coach
+        Route::post('/chess/chat', [ChatController::class, 'chat']);
+        // T2.8: end-of-game coach summary
+        Route::post('/games/{game}/coach-summary', [GameController::class, 'coachSummary']);
     });
 
     // Local TTS (Piper). Heavier throttle because voice fires per move.
@@ -187,8 +199,59 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lessons/{id}', [LessonController::class, 'show']);
     Route::post('/lessons/{id}/complete', [LessonController::class, 'complete']);
 
+    // Placement Assessment (academy onboarding)
+    Route::prefix('assessment')->group(function () {
+        Route::get('/status', [AssessmentController::class, 'status']);
+        Route::post('/start', [AssessmentController::class, 'start']);
+        Route::post('/answer', [AssessmentController::class, 'answer']);
+        Route::get('/result/{id}', [AssessmentController::class, 'result']);
+    });
+
+    // Daily Review Hub
+    Route::get('/daily-review', [DailyReviewController::class, 'index']);
+
+    // Daily homework — spaced repetition over patterns + puzzles
+    Route::get('/homework/today', [HomeworkController::class, 'today']);
+    Route::post('/homework/pattern/{scheduleId}/review', [HomeworkController::class, 'reviewPattern']);
+
+    // Adaptive Academy
+    Route::prefix('academy')->group(function () {
+        Route::get('/tracks', [AcademyController::class, 'tracks']);
+        Route::get('/tracks/{slug}', [AcademyController::class, 'track']);
+        Route::get('/modules/{id}', [AcademyController::class, 'module']);
+        Route::post('/courses/{courseId}/enroll', [AcademyController::class, 'enroll']);
+        Route::post('/activities/{activityId}/complete', [AcademyController::class, 'completeActivity']);
+    });
+
+    // AI Teacher (conversational coach)
+    Route::middleware('throttle:60,1')->prefix('teacher')->group(function () {
+        Route::get('/conversations', [TeacherController::class, 'listConversations']);
+        Route::post('/start', [TeacherController::class, 'start']);
+        Route::get('/conversations/{id}', [TeacherController::class, 'show']);
+        Route::post('/message', [TeacherController::class, 'message']);
+        Route::post('/transcribe', [TeacherController::class, 'transcribe']);
+    });
+
+    // Chess DNA Profile (academy)
+    Route::get('/profile/chess-dna', [ChessDnaController::class, 'dna']);
+    Route::get('/profile/openings/{eco}', [ChessDnaController::class, 'opening']);
+    Route::get('/profile/patterns', function (\Illuminate\Http\Request $r) {
+        return response()->json([
+            'patterns' => \App\Models\UserFailurePattern::where('user_id', $r->user()->id)
+                ->orderByDesc('occurrence_count')->limit(50)->get(),
+        ]);
+    });
+
     // Admin-only routes
     Route::middleware(EnsureAdmin::class)->prefix('admin')->group(function () {
+        // Academy authoring
+        Route::post('/academy/drafts', [AcademyController::class, 'generateDraft']);
+        Route::get('/academy/drafts', [AcademyController::class, 'listDrafts']);
+        Route::post('/academy/drafts/{id}/approve', [AcademyController::class, 'approveDraft']);
+
+        // Telemetry dashboard
+        Route::get('/telemetry', [TelemetryController::class, 'dashboard']);
+
         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::post('/users/{user}/toggle-admin', [AdminController::class, 'toggleAdmin']);

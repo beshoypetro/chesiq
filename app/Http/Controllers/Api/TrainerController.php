@@ -6,6 +6,7 @@ use App\Models\LineProgress;
 use App\Models\MoveRationale;
 use App\Models\OpeningLine;
 use App\Models\TrainingSession;
+use App\Services\CoachContextService;
 use App\Services\GeminiCoachService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -214,7 +215,7 @@ class TrainerController extends Controller
         ]);
     }
 
-    public function coach(Request $request, GeminiCoachService $coach): JsonResponse
+    public function coach(Request $request, GeminiCoachService $coach, CoachContextService $ctxSvc): JsonResponse
     {
         $v = $request->validate([
             'line_id' => 'required|string|max:64',
@@ -229,7 +230,8 @@ class TrainerController extends Controller
             'correct' => 'required|boolean',
         ]);
 
-        $userId = $request->user()->id;
+        $user = $request->user();
+        $userId = $user->id;
         $dayKey = "coach_daily:{$userId}:".now()->format('Y-m-d');
         $count = (int) Cache::get($dayKey, 0);
         if ($count >= self::DAILY_COACH_CAP) {
@@ -241,7 +243,7 @@ class TrainerController extends Controller
         }
         Cache::put($dayKey, $count + 1, now()->endOfDay());
 
-        $text = $coach->coach($v);
+        $text = $coach->coach($v + $ctxSvc->stableUserContext($user));
 
         return response()->json(['text' => $text]);
     }
