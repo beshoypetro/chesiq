@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Game;
-use App\Models\Lesson;
 use App\Models\PatternReviewSchedule;
-use App\Models\Puzzle;
-use App\Models\User;
-use App\Models\UserFailurePattern;
+use App\Services\HomeworkService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -19,100 +15,11 @@ class HomeworkController extends Controller
      * SM-2 spaced repetition extended to failure patterns. Returns a daily
      * homework set: 10 themed puzzles, 1 lesson to review (matched to the
      * user's weakest pattern / level), 1 archive game to re-study.
+     * Composition lives in HomeworkService so the coach session reuses it.
      */
-    public function today(Request $request): JsonResponse
+    public function today(Request $request, HomeworkService $homework): JsonResponse
     {
-        $user = $request->user();
-
-        $duePatterns = PatternReviewSchedule::where('user_id', $user->id)
-            ->whereDate('due_at', '<=', Carbon::today())
-            ->with('failurePattern')
-            ->orderBy('due_at')
-            ->limit(3)
-            ->get();
-
-        // If user has zero schedule rows yet, seed from existing failure patterns.
-        if ($duePatterns->isEmpty()) {
-            $patterns = UserFailurePattern::where('user_id', $user->id)
-                ->orderByDesc('occurrence_count')
-                ->limit(3)
-                ->get();
-            foreach ($patterns as $p) {
-                PatternReviewSchedule::firstOrCreate(
-                    ['user_id' => $user->id, 'failure_pattern_id' => $p->id],
-                    ['due_at' => Carbon::today()],
-                );
-            }
-            $duePatterns = PatternReviewSchedule::where('user_id', $user->id)
-                ->whereDate('due_at', '<=', Carbon::today())
-                ->with('failurePattern')
-                ->limit(3)
-                ->get();
-        }
-
-        $puzzles = Puzzle::query()
-            ->inRandomOrder()
-            ->limit(10)
-            ->get(['id', 'fen', 'moves', 'rating', 'themes']);
-
-        $archiveGame = Game::where('user_id', $user->id)
-            ->whereNotNull('analyzed_at')
-            ->orderByDesc('played_at')
-            ->skip(7)
-            ->first(['id', 'opening_name', 'eco_code', 'result', 'played_at']);
-
-        return response()->json([
-            'pattern_reviews' => $duePatterns,
-            'puzzles' => $puzzles,
-            'lesson_review' => $this->resolveLessonReview($user, $duePatterns),
-            'archive_game' => $archiveGame,
-        ]);
-    }
-
-    /**
-     * Pick one lesson worth re-studying today: first matching the user's most
-     * frequent failure pattern by theme, then anything at their level, then a
-     * sensible default. Returns null only when no lessons exist at all.
-     *
-     * @param  \Illuminate\Support\Collection<int, PatternReviewSchedule>  $duePatterns
-     */
-    private function resolveLessonReview(User $user, $duePatterns): ?array
-    {
-        $levelMap = [
-            'foundations' => 'beginner',
-            'improver' => 'intermediate',
-            'club' => 'intermediate',
-            'tournament' => 'advanced',
-        ];
-        $level = $levelMap[$user->placement_track] ?? null;
-
-        $pattern = optional($duePatterns->first())->failurePattern;
-        $hint = $pattern->pattern_kind ?? $pattern->phase ?? null;
-
-        $lesson = null;
-        if ($hint) {
-            $lesson = Lesson::where('theme', 'like', '%'.$hint.'%')->first();
-        }
-        if (! $lesson && $level) {
-            $lesson = Lesson::where('level', $level)->inRandomOrder()->first();
-        }
-        if (! $lesson) {
-            $lesson = Lesson::inRandomOrder()->first();
-        }
-        if (! $lesson) {
-            return null;
-        }
-
-        return [
-            'id' => $lesson->id,
-            'title' => $lesson->title,
-            'theme' => $lesson->theme,
-            'level' => $lesson->level,
-            'video_url' => $lesson->video_url,
-            'reason' => $hint
-                ? 'Reinforces your recurring "'.str_replace('_', ' ', $hint).'" pattern.'
-                : 'A timely refresher for your level.',
-        ];
+        return response()->json($homework->today($request->user()));
     }
 
     public function reviewPattern(Request $request, int $scheduleId): JsonResponse

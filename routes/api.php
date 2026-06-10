@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AnnotationController;
 use App\Http\Controllers\Api\AcademyController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\ChessDnaController;
+use App\Http\Controllers\Api\CoachSessionController;
 use App\Http\Controllers\Api\DailyReviewController;
 use App\Http\Controllers\Api\HomeworkController;
 use App\Http\Controllers\Api\ImprovementPlanController;
@@ -251,6 +252,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Daily homework — spaced repetition over patterns + puzzles
     Route::get('/homework/today', [HomeworkController::class, 'today']);
     Route::post('/homework/pattern/{scheduleId}/review', [HomeworkController::class, 'reviewPattern']);
+
+    // Coach-led daily session (V3 P2) — server-composed voiced script
+    Route::get('/coach/session', [CoachSessionController::class, 'today']);
+    Route::post('/coach/session/complete', [CoachSessionController::class, 'complete']);
 
     // Adaptive Academy
     Route::prefix('academy')->group(function () {

@@ -46,6 +46,12 @@ return [
         'Here\'s the move you missed.',
         'Let me show you the idea.',
     ],
+    'quiz_prompts' => [
+        'Hold on — what would you play here? Show me on the board.',
+    ],
+    'walk_offers' => [
+        'Fresh analysis is in. Want me to walk you through this one?',
+    ],
     'wrapups' => [
         'Good session today. Same time tomorrow.',
         'That\'s a wrap. Keep this pattern in mind.',
