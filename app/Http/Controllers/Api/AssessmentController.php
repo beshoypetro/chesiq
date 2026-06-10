@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\AcademyController;
 use App\Models\AssessmentPosition;
 use App\Models\AssessmentResponse;
 use App\Models\UserAssessment;
 use App\Services\AdaptiveAssessmentService;
+use App\Services\ImprovementPlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AssessmentController extends Controller
 {
@@ -68,6 +71,13 @@ class AssessmentController extends Controller
 
         if ($svc->shouldTerminate($assessment)) {
             $svc->finalize($assessment);
+            $fresh = $request->user()->fresh();
+            // Placement finalized → enroll into the recommended track's first
+            // course so the academy loop has a real starting point.
+            $this->autoEnroll($fresh);
+            // Re-assessment finalized → full plan recompute, announce new band
+            // if changed (spec §7). Defensive — never break the result response.
+            $this->syncImprovementPlan($fresh);
             return $this->result($request, $assessment->id);
         }
 
@@ -111,6 +121,53 @@ class AssessmentController extends Controller
             'placement_elo' => $u->placement_elo,
             'placement_track' => $u->placement_track,
         ]);
+    }
+
+    /**
+     * V2 Phase G — skip the placement quiz, infer Elo from game history.
+     * Returns the same shape as a completed assessment.
+     */
+    public function estimateFromGames(Request $request, AdaptiveAssessmentService $svc): JsonResponse
+    {
+        $result = $svc->estimateFromGames($request->user());
+
+        $fresh = $request->user()->fresh();
+        // Placement set from game history → enroll into the recommended track.
+        $this->autoEnroll($fresh);
+        // Placement set from game history → full plan recompute (spec §7).
+        $this->syncImprovementPlan($fresh);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Defensive academy auto-enroll — enroll the placed user into the
+     * recommended track's first course. A failure here must never break
+     * placement, so it is fully wrapped in try/catch.
+     */
+    private function autoEnroll(?\App\Models\User $user): void
+    {
+        if (! $user || ! $user->placement_track) {
+            return;
+        }
+        try {
+            app(AcademyController::class)->autoEnrollFromPlacement($user->id, $user->placement_track);
+        } catch (\Throwable $e) {
+            Log::warning('Academy auto-enroll (placement) failed', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /** Defensive plan sync — a failure here must never break assessment. */
+    private function syncImprovementPlan(?\App\Models\User $user): void
+    {
+        if (! $user) {
+            return;
+        }
+        try {
+            app(ImprovementPlanService::class)->sync($user, force: true);
+        } catch (\Throwable $e) {
+            Log::warning('ImprovementPlan sync (assessment) failed', ['error' => $e->getMessage()]);
+        }
     }
 
     private function serializePosition(AssessmentPosition $p): array

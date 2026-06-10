@@ -120,7 +120,7 @@ class ChessDnaController extends Controller
                 "Average accuracy " . ($avgAccuracy ?? 'unknown') . "%. " .
                 "Give one concise paragraph of advice for this player in this opening — what to study, what to avoid.";
             try {
-                $advice = $coach->hint($prompt);
+                $advice = $coach->hint($prompt, $user->trainerPersona());
                 if ($advice) {
                     CoachCache::updateOrCreate(
                         ['cache_key' => $cacheKey],

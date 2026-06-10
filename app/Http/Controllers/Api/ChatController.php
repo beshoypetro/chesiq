@@ -65,6 +65,7 @@ class ChatController extends Controller
             + $stable
             + $ephemeral
             + ['memory_notes' => $memoryNotes]
+            + ['_persona' => $user->trainerPersona()]
         );
 
         return response()->json([

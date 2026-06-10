@@ -243,7 +243,7 @@ class TrainerController extends Controller
         }
         Cache::put($dayKey, $count + 1, now()->endOfDay());
 
-        $text = $coach->coach($v + $ctxSvc->stableUserContext($user));
+        $text = $coach->coach($v + $ctxSvc->stableUserContext($user) + ['_persona' => $user->trainerPersona()]);
 
         return response()->json(['text' => $text]);
     }

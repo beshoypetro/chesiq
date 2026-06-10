@@ -242,6 +242,11 @@ class GameController extends Controller
         }
         $user = $request->user();
 
+        // GAME_REVIEW_REFACTOR §5 — optional per-request trainer override.
+        $validated = $request->validate([
+            'trainer_id' => 'nullable|string|in:'.implode(',', array_keys(config('trainers', []))),
+        ]);
+
         // Notable moves the LLM should ground on — the actual mistakes worth
         // reviewing, sorted by severity. Cap at 8 so we don't blow the prompt.
         $notable = $game->moveAnalyses()
@@ -275,6 +280,7 @@ class GameController extends Controller
             'user_accuracy' => $game->user_accuracy,
             'result' => $game->result,
             'notable_moves' => $notable,
+            '_persona' => $user->trainerPersona($validated['trainer_id'] ?? null),
         ] + $ephemeral + $stable);
 
         // T4.13 — Pattern-match the LLM's drill_motif tag onto Lesson.theme.

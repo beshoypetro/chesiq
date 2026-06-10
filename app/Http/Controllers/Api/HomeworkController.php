@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\Lesson;
 use App\Models\PatternReviewSchedule;
 use App\Models\Puzzle;
+use App\Models\User;
 use App\Models\UserFailurePattern;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,8 +17,8 @@ class HomeworkController extends Controller
 {
     /**
      * SM-2 spaced repetition extended to failure patterns. Returns a daily
-     * homework set: 10 themed puzzles, 1 lesson review (placeholder until
-     * activities exist), 1 archive game to re-study.
+     * homework set: 10 themed puzzles, 1 lesson to review (matched to the
+     * user's weakest pattern / level), 1 archive game to re-study.
      */
     public function today(Request $request): JsonResponse
     {
@@ -62,9 +64,55 @@ class HomeworkController extends Controller
         return response()->json([
             'pattern_reviews' => $duePatterns,
             'puzzles' => $puzzles,
-            'lesson_review' => null,
+            'lesson_review' => $this->resolveLessonReview($user, $duePatterns),
             'archive_game' => $archiveGame,
         ]);
+    }
+
+    /**
+     * Pick one lesson worth re-studying today: first matching the user's most
+     * frequent failure pattern by theme, then anything at their level, then a
+     * sensible default. Returns null only when no lessons exist at all.
+     *
+     * @param  \Illuminate\Support\Collection<int, PatternReviewSchedule>  $duePatterns
+     */
+    private function resolveLessonReview(User $user, $duePatterns): ?array
+    {
+        $levelMap = [
+            'foundations' => 'beginner',
+            'improver' => 'intermediate',
+            'club' => 'intermediate',
+            'tournament' => 'advanced',
+        ];
+        $level = $levelMap[$user->placement_track] ?? null;
+
+        $pattern = optional($duePatterns->first())->failurePattern;
+        $hint = $pattern->pattern_kind ?? $pattern->phase ?? null;
+
+        $lesson = null;
+        if ($hint) {
+            $lesson = Lesson::where('theme', 'like', '%'.$hint.'%')->first();
+        }
+        if (! $lesson && $level) {
+            $lesson = Lesson::where('level', $level)->inRandomOrder()->first();
+        }
+        if (! $lesson) {
+            $lesson = Lesson::inRandomOrder()->first();
+        }
+        if (! $lesson) {
+            return null;
+        }
+
+        return [
+            'id' => $lesson->id,
+            'title' => $lesson->title,
+            'theme' => $lesson->theme,
+            'level' => $lesson->level,
+            'video_url' => $lesson->video_url,
+            'reason' => $hint
+                ? 'Reinforces your recurring "'.str_replace('_', ' ', $hint).'" pattern.'
+                : 'A timely refresher for your level.',
+        ];
     }
 
     public function reviewPattern(Request $request, int $scheduleId): JsonResponse

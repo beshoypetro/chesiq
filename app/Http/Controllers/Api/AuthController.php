@@ -96,6 +96,100 @@ class AuthController extends Controller
         return response()->json(['user' => $this->formatUser($request->user()->fresh())]);
     }
 
+    // ── V2 onboarding endpoints (spec §22) ───────────────────────────────────
+
+    public function updateIntent(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'intents' => 'required|array|min:1|max:5',
+            'intents.*' => 'string|in:build_openings,stop_losing_endgames,sharpen_tactics,take_lessons,just_play_more',
+        ]);
+
+        $request->user()->update(['intents' => $data['intents']]);
+
+        return response()->json(['user' => $this->formatUser($request->user()->fresh())]);
+    }
+
+    public function updateCoachingMode(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'coaching_mode' => 'required|string|in:full,tour,off',
+        ]);
+
+        $request->user()->update(['coaching_mode' => $data['coaching_mode']]);
+
+        return response()->json(['user' => $this->formatUser($request->user()->fresh())]);
+    }
+
+    /**
+     * Update Settings-page preferences. Any subset of the three toggles may be
+     * sent. `email_notifications` maps onto the existing digest opt-out column
+     * so the weekly-digest recipient query keeps working unchanged; the other
+     * two persist in the `preferences` JSON column.
+     */
+    public function updatePreferences(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email_notifications' => 'sometimes|boolean',
+            'auto_analyze' => 'sometimes|boolean',
+            'public_profile' => 'sometimes|boolean',
+        ]);
+
+        $user = $request->user();
+
+        if (array_key_exists('email_notifications', $data)) {
+            $user->digest_unsubscribed_at = $data['email_notifications'] ? null : now();
+        }
+
+        $stored = is_array($user->preferences) ? $user->preferences : [];
+        foreach (['auto_analyze', 'public_profile'] as $key) {
+            if (array_key_exists($key, $data)) {
+                $stored[$key] = $data[$key];
+            }
+        }
+        $user->preferences = $stored;
+        $user->save();
+
+        return response()->json(['user' => $this->formatUser($user->fresh())]);
+    }
+
+    public function onboardingStatus(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'onboarding_step' => (int) ($user->onboarding_step ?? 0),
+            'onboarding_completed_at' => $user->onboarding_completed_at?->toISOString(),
+            'coaching_mode' => $user->coaching_mode ?? 'full',
+            'selected_trainer_id' => $user->selected_trainer_id,
+            'has_chess_com' => ! empty($user->chess_com_username),
+            'has_lichess' => ! empty($user->lichess_username),
+            'has_intents' => is_array($user->intents) && count($user->intents) > 0,
+        ]);
+    }
+
+    public function onboardingSkip(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'step' => 'required|integer|min:0|max:6',
+        ]);
+
+        $user = $request->user();
+        $current = (int) ($user->onboarding_step ?? 0);
+        $next = max($current, (int) $data['step']);
+
+        $update = ['onboarding_step' => $next];
+        if ($next >= 6) {
+            $update['onboarding_completed_at'] = now();
+        }
+        $user->update($update);
+
+        return response()->json([
+            'onboarding_step' => $next,
+            'onboarding_completed_at' => $user->fresh()->onboarding_completed_at?->toISOString(),
+        ]);
+    }
+
     private function formatUser(User $user): array
     {
         return [
@@ -105,6 +199,14 @@ class AuthController extends Controller
             'is_admin' => (bool) $user->is_admin,
             'chess_com_username' => $user->chess_com_username,
             'last_synced_at' => $user->last_synced_at?->toISOString(),
+            // V2 fields
+            'lichess_username' => $user->lichess_username,
+            'selected_trainer_id' => $user->selected_trainer_id,
+            'coaching_mode' => $user->coaching_mode ?? 'full',
+            'onboarding_step' => (int) ($user->onboarding_step ?? 0),
+            'onboarding_completed_at' => $user->onboarding_completed_at?->toISOString(),
+            'intents' => is_array($user->intents) ? $user->intents : [],
+            'preferences' => $user->resolvedPreferences(),
         ];
     }
 

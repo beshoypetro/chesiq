@@ -8,8 +8,10 @@ use App\Models\PuzzleRushScore;
 use App\Models\PuzzleStreakScore;
 use App\Models\UserPuzzleAttempt;
 use App\Models\UserPuzzleRating;
+use App\Services\ImprovementPlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PuzzleController extends Controller
 {
@@ -112,6 +114,14 @@ class PuzzleController extends Controller
 
         $userRating->update(['rating' => $newUserRating, 'updated_at' => now()]);
         $puzzle->update(['rating' => $newPuzzleRating]);
+
+        // Puzzle attempt → refresh tactics/calculation mastery + next action (spec §7).
+        // Defensive: never let a plan-sync failure break the attempt response.
+        try {
+            app(ImprovementPlanService::class)->sync($user);
+        } catch (\Throwable $e) {
+            Log::warning('ImprovementPlan sync (puzzle attempt) failed', ['error' => $e->getMessage()]);
+        }
 
         return response()->json([
             'solved' => $data['solved'],

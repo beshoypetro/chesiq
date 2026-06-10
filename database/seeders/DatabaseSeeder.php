@@ -24,6 +24,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(PuzzleSeeder::class);
         $this->call(AssessmentPositionSeeder::class);
-        $this->call(AcademyTrackSeeder::class);
+        $this->call(AcademyCurriculumSeeder::class);
     }
 }

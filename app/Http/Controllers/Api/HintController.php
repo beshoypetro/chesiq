@@ -17,6 +17,8 @@ class HintController extends Controller
         $validated = $request->validate([
             'fen'     => 'required|string|max:100',
             'history' => 'nullable|array|max:200',
+            // GAME_REVIEW_REFACTOR §5 — voice a specific trainer per request.
+            'trainer_id' => 'nullable|string|in:'.implode(',', array_keys(config('trainers', []))),
         ]);
 
         $user = $request->user();
@@ -41,7 +43,7 @@ class HintController extends Controller
         $prompt  = "Position FEN: {$validated['fen']}. Recent moves: {$history}. Give me ONE concrete strategic goal for this position in one sentence — do NOT reveal the best move, just the idea.";
 
         try {
-            $tip = $coach->hint($prompt);
+            $tip = $coach->hint($prompt, $user->trainerPersona($validated['trainer_id'] ?? null));
         } catch (\Throwable) {
             $tip = 'Focus on piece activity and king safety.';
         }

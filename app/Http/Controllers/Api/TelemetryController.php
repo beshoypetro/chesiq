@@ -8,11 +8,37 @@ use App\Models\TeacherConversation;
 use App\Models\TeacherMessage;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TelemetryController extends Controller
 {
+    /**
+     * V2 Phase K — lightweight client event ingestion.
+     *
+     * POST /api/telemetry/event  { event: string, props?: object }
+     *
+     * Fire-and-forget from the frontend. Logged at info level today; can be
+     * swapped for a dedicated events table later without touching callers.
+     */
+    public function event(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'event' => 'required|string|max:80',
+            'props' => 'nullable|array',
+        ]);
+
+        Log::info('client.event', [
+            'event' => $data['event'],
+            'props' => $data['props'] ?? [],
+            'user_id' => $request->user()?->id,
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function dashboard(): JsonResponse
     {
         $since30 = Carbon::now()->subDays(30);

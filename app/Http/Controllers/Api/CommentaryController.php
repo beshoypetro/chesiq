@@ -45,6 +45,10 @@ class CommentaryController extends Controller
             'candidate_moves' => 'nullable|array|max:5',
             'candidate_moves.*.san' => 'required_with:candidate_moves|string|max:20',
             'candidate_moves.*.eval' => 'required_with:candidate_moves|numeric',
+            // GAME_REVIEW_REFACTOR §5: optional per-request trainer override so
+            // callers (e.g. the game-review walkthrough) can voice a specific
+            // character without changing the user's saved selection.
+            'trainer_id' => 'nullable|string|in:'.implode(',', array_keys(config('trainers', []))),
         ]);
 
         $user = $request->user();
@@ -99,6 +103,7 @@ class CommentaryController extends Controller
             'masters_popularity_pct' => $popularity,
             'tactical_motifs' => $motifList,
             'tablebase_note' => $tbNote,
+            '_persona' => $user->trainerPersona($validated['trainer_id'] ?? null),
         ];
 
         return response()->json([

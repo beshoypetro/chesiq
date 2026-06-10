@@ -8,8 +8,11 @@ use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\ChessDnaController;
 use App\Http\Controllers\Api\DailyReviewController;
 use App\Http\Controllers\Api\HomeworkController;
+use App\Http\Controllers\Api\ImprovementPlanController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\TelemetryController;
+use App\Http\Controllers\Api\TrainerCharacterController;
+use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\CommentaryController;
@@ -28,6 +31,7 @@ use App\Http\Controllers\Api\ModelGamesController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\PuzzleController;
 use App\Http\Controllers\Api\PuzzleSetController;
+use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\RepertoireController;
 use App\Http\Controllers\Api\StudyPlanController;
 use App\Http\Controllers\Api\StyleController;
@@ -49,6 +53,9 @@ Route::middleware('throttle:10,1')->group(function () {
 // Public digest unsubscribe (no auth required — token in URL)
 Route::get('/digest/unsubscribe', [DigestController::class, 'unsubscribe']);
 
+// V2 trainer registry — public so the selection page can render without auth.
+Route::get('/trainers', [TrainerCharacterController::class, 'index']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
@@ -56,6 +63,27 @@ Route::middleware('auth:sanctum')->group(function () {
     // Throttled because updateUsername probes chess.com's public API,
     // which lets an attacker enumerate chess.com usernames at authed-user speed otherwise.
     Route::middleware('throttle:10,1')->post('/me/username', [AuthController::class, 'updateUsername']);
+
+    // V2 user prefs + onboarding (spec §22)
+    Route::patch('/user/trainer', [TrainerCharacterController::class, 'select']);
+    Route::patch('/user/intent', [AuthController::class, 'updateIntent']);
+    Route::patch('/user/coaching-mode', [AuthController::class, 'updateCoachingMode']);
+    Route::patch('/user/preferences', [AuthController::class, 'updatePreferences']);
+    Route::get('/user/onboarding', [AuthController::class, 'onboardingStatus']);
+    Route::post('/user/onboarding/skip', [AuthController::class, 'onboardingSkip']);
+
+    // V2 Phase H — per-user weekly plan
+    Route::get('/plan/current', [PlanController::class, 'current']);
+    // LLM-backed — gate behind the same throttle as other Gemini calls.
+    Route::middleware('throttle:30,1')->post('/plan/generate', [PlanController::class, 'generate']);
+
+    // Improvement Plan — durable adaptive long-horizon plan (IMPROVEMENT_PLAN_SPEC §9)
+    Route::get('/improvement-plan', [ImprovementPlanController::class, 'show']);
+    Route::middleware('throttle:30,1')->post('/improvement-plan/sync', [ImprovementPlanController::class, 'sync']);
+    Route::post('/improvement-plan/action/complete', [ImprovementPlanController::class, 'completeAction']);
+
+    // V2 Phase K — client telemetry events. Throttled high; payloads are tiny.
+    Route::middleware('throttle:120,1')->post('/telemetry/event', [TelemetryController::class, 'event']);
 
     Route::post('/sync', [SyncController::class, 'sync']);
 
@@ -205,7 +233,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/start', [AssessmentController::class, 'start']);
         Route::post('/answer', [AssessmentController::class, 'answer']);
         Route::get('/result/{id}', [AssessmentController::class, 'result']);
+        // V2 Phase G — skip path that infers placement from game history.
+        Route::post('/estimate-from-games', [AssessmentController::class, 'estimateFromGames']);
     });
+
+    // Ranking / rating-progress timeline (no new table — derived from games)
+    Route::get('/ranking', [RankingController::class, 'index']);
 
     // Daily Review Hub
     Route::get('/daily-review', [DailyReviewController::class, 'index']);
@@ -219,6 +252,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tracks', [AcademyController::class, 'tracks']);
         Route::get('/tracks/{slug}', [AcademyController::class, 'track']);
         Route::get('/modules/{id}', [AcademyController::class, 'module']);
+        Route::get('/activities/{id}', [AcademyController::class, 'activity']);
         Route::post('/courses/{courseId}/enroll', [AcademyController::class, 'enroll']);
         Route::post('/activities/{activityId}/complete', [AcademyController::class, 'completeActivity']);
     });

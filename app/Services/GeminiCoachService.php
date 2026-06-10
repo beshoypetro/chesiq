@@ -51,6 +51,25 @@ Examples (each is one complete reply):
 "This sacrifice pulls the king onto the dark squares where every piece is already pointing — the rook lift on the next move is what makes it work. It looks reckless because the queen is briefly out of play, but the king has no safe escape squares and white converts on move three. Patterns like this come from studying Tal — the king matters more than the material count."
 PROMPT;
 
+    /**
+     * Returns the system prompt for an outbound Gemini call, optionally
+     * prepended with a trainer persona line. Controllers wire the persona
+     * by setting `_persona` on the $ctx array — typically pulled from
+     * `config('trainers')[$user->selected_trainer_id]['persona']`.
+     *
+     * The persona is not part of the cache key (see cacheKey()) because the
+     * same coached idea should be reused regardless of which character voiced
+     * it — persona shapes tone, not factual content.
+     */
+    private function systemPrompt(array $ctx): string
+    {
+        $persona = $ctx['_persona'] ?? null;
+        if (! is_string($persona) || $persona === '') {
+            return self::SYSTEM_PROMPT;
+        }
+        return $persona . "\n\n" . self::SYSTEM_PROMPT;
+    }
+
     public function coach(array $ctx): string
     {
         $key = $this->cacheKey($ctx);
@@ -71,7 +90,7 @@ PROMPT;
         try {
             $response = Http::timeout(10)->post($url, [
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt($ctx)]],
                 ],
                 'contents' => [[
                     'role' => 'user',
@@ -190,7 +209,7 @@ PROMPT;
         try {
             $response = Http::timeout(20)->post($url, [
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt($ctx)]],
                 ],
                 'contents' => [[
                     'role' => 'user',
@@ -400,10 +419,15 @@ PROMPT;
     /**
      * F005: In-game hint — given a position FEN, return a one-sentence strategic goal.
      * Does NOT reveal the best move, only the idea.
+     *
+     * Persona, when provided, is folded into both the system prompt (so the
+     * hint sounds like the trainer) and the cache key (so two trainers don't
+     * share a cached line that was first generated for a different persona).
      */
-    public function hint(string $prompt): string
+    public function hint(string $prompt, ?string $persona = null): string
     {
-        $key = 'hint|' . hash('sha256', $prompt);
+        $personaKey = is_string($persona) && $persona !== '' ? hash('sha256', $persona) : 'none';
+        $key = 'hint|' . $personaKey . '|' . hash('sha256', $prompt);
 
         $hit = CoachCache::where('cache_key', $key)->first();
         if ($hit) {
@@ -421,7 +445,7 @@ PROMPT;
         try {
             $response = Http::timeout(10)->post($url, [
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt(['_persona' => $persona])]],
                 ],
                 'contents' => [[
                     'role' => 'user',
@@ -519,8 +543,10 @@ PROMPT;
 
         try {
             $response = Http::timeout(30)->post($url, [
+                // generateLineRationales runs server-side per opening line, not
+                // per user — persona doesn't apply here.
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt([])]],
                 ],
                 'contents' => [[
                     'role' => 'user',
@@ -606,7 +632,7 @@ PROMPT;
         try {
             $response = Http::timeout(30)->post($url, [
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt($ctx)]],
                 ],
                 'contents' => [[
                     'role' => 'user',
@@ -760,7 +786,7 @@ PROMPT;
         try {
             $response = Http::timeout(25)->post($url, [
                 'system_instruction' => [
-                    'parts' => [['text' => self::SYSTEM_PROMPT]],
+                    'parts' => [['text' => $this->systemPrompt($ctx)]],
                 ],
                 'contents' => $contents,
                 'generationConfig' => [

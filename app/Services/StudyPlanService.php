@@ -12,7 +12,32 @@ class StudyPlanService
      */
     public function generate(User $user): array
     {
-        // Gather stats
+        $signals = $this->signals($user);
+
+        // Build plan — simple heuristic rules
+        $plan = [];
+        $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        for ($i = 0; $i < 7; $i++) {
+            $plan[$i] = [
+                'day_index' => $i,
+                'day_name' => $dayNames[$i],
+                'activities' => $this->activitiesForDay($i, $signals),
+            ];
+        }
+
+        return $plan;
+    }
+
+    /**
+     * Core training signals for a user, computed deterministically from the DB.
+     * Single source so ImprovementPlanService reuses the exact same numbers the
+     * weekly plan is built from (spec §3 — reuse, don't duplicate).
+     *
+     * @return array{puzzle_rating: float, avg_accuracy: float, deviation_avg: float, weak_phase: ?string, weak_theme: ?string}
+     */
+    public function signals(User $user): array
+    {
         $puzzleRating = DB::table('user_puzzle_ratings')
             ->where('user_id', $user->id)
             ->value('rating') ?? 1500;
@@ -26,31 +51,13 @@ class StudyPlanService
             ->whereNotNull('repertoire_deviation_ply')
             ->avg('repertoire_deviation_ply') ?? 0;
 
-        // Phase accuracy
-        $phaseRec = $this->weakestPhase($user);
-
-        // Tactical theme weakness
-        $weakTheme = $this->weakestTheme($user);
-
-        // Build plan — simple heuristic rules
-        $plan = [];
-        $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-        for ($i = 0; $i < 7; $i++) {
-            $plan[$i] = [
-                'day_index' => $i,
-                'day_name' => $dayNames[$i],
-                'activities' => $this->activitiesForDay($i, [
-                    'puzzle_rating' => $puzzleRating,
-                    'avg_accuracy' => $avgAccuracy,
-                    'deviation_avg' => $deviationAvg,
-                    'weak_phase' => $phaseRec,
-                    'weak_theme' => $weakTheme,
-                ]),
-            ];
-        }
-
-        return $plan;
+        return [
+            'puzzle_rating' => (float) $puzzleRating,
+            'avg_accuracy' => (float) $avgAccuracy,
+            'deviation_avg' => (float) $deviationAvg,
+            'weak_phase' => $this->weakestPhase($user),
+            'weak_theme' => $this->weakestTheme($user),
+        ];
     }
 
     private function activitiesForDay(int $day, array $stats): array
@@ -87,7 +94,12 @@ class StudyPlanService
         };
     }
 
-    private function weakestPhase(User $user): ?string
+    /**
+     * Weakest game phase by average centipawn loss on the user's own moves.
+     * Public so ImprovementPlanService can reuse the same signal (spec §3/§4 —
+     * do not duplicate the computation). Returns 'opening'|'middlegame'|'endgame'|null.
+     */
+    public function weakestPhase(User $user): ?string
     {
         $gameIds = $user->games()->whereNotNull('analyzed_at')->pluck('id');
         if ($gameIds->isEmpty()) {
@@ -120,7 +132,12 @@ class StudyPlanService
         return $worst;
     }
 
-    private function weakestTheme(User $user): ?string
+    /**
+     * Weakest tactical puzzle theme (lowest solve rate over the last 90 days,
+     * min 3 attempts). Public so ImprovementPlanService can reuse it for the
+     * next-action puzzle motif (spec §5). Returns the theme string or null.
+     */
+    public function weakestTheme(User $user): ?string
     {
         $rows = DB::table('user_puzzle_attempts as a')
             ->join('puzzles as p', 'a.puzzle_id', '=', 'p.id')
