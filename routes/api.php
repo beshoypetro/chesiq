@@ -110,6 +110,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/tts', [TtsController::class, 'synthesize']);
     });
 
+    // Cache pre-warming for upcoming coach lines (bytes discarded server-side)
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/tts/prewarm', [TtsController::class, 'prewarm']);
+    });
+
     // Trainer (opening drill with voice coach)
     Route::prefix('training')->group(function () {
         Route::get('/plan', [TrainerController::class, 'plan']);

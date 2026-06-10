@@ -42,4 +42,42 @@ class TtsController extends Controller
             'Cache-Control' => 'private, max-age=86400',
         ]);
     }
+
+    /**
+     * Pre-synthesize upcoming lines into the Piper disk cache so the later
+     * /tts call for the same text is a near-instant cache hit. Bytes are
+     * discarded — this endpoint exists purely to warm the cache ahead of
+     * playback (walkthrough prefetch, session line catalogs).
+     */
+    public function prewarm(Request $request, PiperTtsService $piper)
+    {
+        $v = $request->validate([
+            'texts' => 'required|array|min:1|max:3',
+            'texts.*' => 'required|string|max:400',
+            'voice' => 'nullable|string|max:40',
+        ]);
+
+        $userId = $request->user()->id;
+        $dayKey = "tts_daily:{$userId}:".now()->format('Y-m-d');
+        $count = (int) Cache::get($dayKey, 0);
+        if ($count >= self::DAILY_TTS_CAP) {
+            return response()->json(['warmed' => 0], 429);
+        }
+
+        $warmed = 0;
+        foreach ($v['texts'] as $text) {
+            if ($count + $warmed >= self::DAILY_TTS_CAP) {
+                break;
+            }
+            if ($piper->synthesize($text, $v['voice'] ?? null) !== null) {
+                $warmed++;
+            }
+        }
+
+        if ($warmed > 0) {
+            Cache::put($dayKey, $count + $warmed, now()->endOfDay());
+        }
+
+        return response()->json(['warmed' => $warmed]);
+    }
 }
