@@ -1974,11 +1974,49 @@ MD
                     'title'     => $item['title'],
                 ],
                 [
-                    'config'        => $item['config'],
+                    'config'        => $this->withBeats($item),
                     'display_order' => $item['display_order'],
                     'published'     => true,
                 ]
             );
         }
+    }
+
+    /** @var array<string, array<int, array<string, mixed>>>|null */
+    private ?array $beatLibrary = null;
+
+    /**
+     * Merge trainer-narrated board "beats" into lesson configs. The beats are
+     * authored in data/lesson_beats.json keyed by exact lesson title (kept as
+     * JSON so the chess can be machine-validated with chess.js — see
+     * tmp/lesson-beats/validate-beats.mjs in the workspace root). Inline beats
+     * defined directly in this file win over the library.
+     *
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
+     */
+    private function withBeats(array $item): array
+    {
+        $config = $item['config'];
+        if (! in_array($item['type'], ['lesson_markdown', 'guided_study'], true)) {
+            return $config;
+        }
+        if (! empty($config['beats'])) {
+            return $config;
+        }
+
+        if ($this->beatLibrary === null) {
+            $path = __DIR__.'/data/lesson_beats.json';
+            $raw = is_file($path) ? file_get_contents($path) : false;
+            $decoded = $raw !== false ? json_decode($raw, true) : null;
+            $this->beatLibrary = is_array($decoded) ? $decoded : [];
+        }
+
+        $beats = $this->beatLibrary[$item['title']] ?? null;
+        if (is_array($beats) && $beats !== []) {
+            $config['beats'] = $beats;
+        }
+
+        return $config;
     }
 }

@@ -1,0 +1,831 @@
+{
+  "Pins and Skewers Explained": [
+    {
+      "say": "Today, two cousins from the same family: the pin and the skewer. Look at this black knight — it's standing right between my rook and the black king. That knight is in big trouble.",
+      "fen": "4k3/p5pp/8/4n3/8/8/5PPP/4R1K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "My rook stares straight up the file: rook, knight, king, all in one line. The knight can't move — if it did, his own king would be in check. We say the knight is pinned. And when the king is the piece behind, it's an absolute pin: moving the knight is literally illegal."
+    },
+    {
+      "say": "Here's the golden rule: attack the pinned piece! My pawn steps up two squares and hits the knight. It's attacked, and it cannot run away.",
+      "move": "f4"
+    },
+    {
+      "say": "Black is helpless. The knight is frozen in place, so all Black can do is push a pawn on the other side of the board and watch.",
+      "move": "a6"
+    },
+    {
+      "say": "And the pawn just takes it. A whole knight for free — that's the power of the pin: freeze a piece first, then gang up on it.",
+      "move": "fxe5"
+    },
+    {
+      "say": "Now meet the skewer — the pin in reverse. This time the big piece stands in front and the smaller one hides behind it. See the black king and the black rook lined up on the same file?",
+      "fen": "4r3/8/8/4k3/8/8/8/R5K1 w - - 0 1"
+    },
+    {
+      "say": "My rook slides over and gives check. The king gets hit first — and a king in check has to deal with it right now.",
+      "move": "Re1+"
+    },
+    {
+      "say": "The king steps aside, because it has no choice. But look what's standing behind him, right in my rook's line of fire.",
+      "move": "Kd4"
+    },
+    {
+      "say": "Crunch — my rook runs straight down the line and grabs the rook hiding behind. King in front, treasure behind: that's a skewer.",
+      "move": "Rxe8"
+    },
+    {
+      "say": "Remember the pair: in a pin, the small piece is in front and gets frozen. In a skewer, the big piece is in front and gets pushed aside. Either way, line up your rooks, bishops, and queen with enemy pieces, and the board starts handing you free material."
+    }
+  ],
+  "Reading the Board for Mate": [
+    {
+      "say": "Before every move, ask yourself one magic question: can I checkmate right now? Look at this position. The black king is hiding behind his pawns in the corner — and that is exactly his problem.",
+      "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Checkmate needs three things. One: my move gives check. Two: the king has nowhere to run. Three: nobody can block the check or capture my attacker. Let's test all three."
+    },
+    {
+      "say": "My rook charges all the way down the open file to the back rank — check! Now watch the black king look for an exit.",
+      "move": "Re8#"
+    },
+    {
+      "say": "There isn't one. His own pawns block every square in front of him, and my rook controls the entire back rank. Check, no escape, no rescue — that's the famous back-rank mate. Those pawns meant to protect the king became his prison."
+    },
+    {
+      "say": "One more pattern. Here the black king is alone in the corner, and my own king stands close by like a bodyguard. Queen and king working together — run the checklist again.",
+      "fen": "7k/4Q3/6K1/8/8/8/8/8 w - - 0 1"
+    },
+    {
+      "say": "The queen lands right next to his king — check! And here's the trick: my king protects her, so the black king can't capture. Every escape square is covered. Checkmate.",
+      "move": "Qg7#"
+    },
+    {
+      "say": "Notice it's the teamwork that does it: the queen attacks, my king guards her, and the corner takes away all the remaining squares."
+    },
+    {
+      "say": "So make it a habit: every single move, glance at the enemy king and count its escape squares. The day you start asking can I mate right now, you'll start finding mates your opponents never see coming."
+    }
+  ],
+  "The King as an Endgame Weapon": [
+    {
+      "say": "In the opening and middlegame your king hides. But in the endgame, everything changes — the king comes out and fights. Watch my king personally walk this little pawn all the way to glory.",
+      "fen": "4k3/8/4K3/4P3/8/8/8/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Here's the secret: the king leads, the pawn follows. My king stands proudly in front of its pawn, controlling the squares ahead. The black king's only hope is to block the road."
+    },
+    {
+      "say": "I step my king forward and to the side. Now I control the squares the pawn needs next — I'm clearing the road before the pawn even moves.",
+      "move": "Kd6"
+    },
+    {
+      "say": "The black king slides over, trying to stay in front of my pawn. It's the right idea — but watch what happens to it.",
+      "move": "Kd8"
+    },
+    {
+      "say": "Now the pawn marches, completely safe under the king's protection. See how my king shields it the whole way up the board?",
+      "move": "e6"
+    },
+    {
+      "say": "Black hops back in front of the pawn. It looks like a roadblock — but it's about to get shoved out of the way.",
+      "move": "Ke8"
+    },
+    {
+      "say": "One more step. The pawn is now a single square away from becoming a queen, and the black king is running out of room.",
+      "move": "e7"
+    },
+    {
+      "say": "The black king has exactly one square left, so it steps aside. The blockade is broken.",
+      "move": "Kf7"
+    },
+    {
+      "say": "And here's the winning touch: my king moves up and guards the queening square. Nothing in the world can stop this pawn now.",
+      "move": "Kd7"
+    },
+    {
+      "say": "Black can only watch from the side. There is no square from which his king can fight for the pawn anymore.",
+      "move": "Kf6"
+    },
+    {
+      "say": "And the pawn becomes a queen! Notice who did all the work — not the pawn, the king. It cleared the path, shielded the pawn, and guarded the final square.",
+      "move": "e8=Q"
+    },
+    {
+      "say": "So in the endgame, wake your king up. March it to the center, put it in front of your pawns, and let it fight. An active king is often worth more than an extra pawn."
+    }
+  ],
+  "Queen + King vs. King": [
+    {
+      "say": "Queen and king against a lone king — every player must know this finish. The plan has three steps: shrink the box around his king, bring my own king to help, and deliver mate on the edge. Never in the middle — a king can't be mated in open space.",
+      "fen": "8/4k3/8/6K1/3Q4/8/8/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Watch the queen sit exactly a knight's jump away from his king. From there she fences him in without giving check — he can't cross her file and he can't come forward. The box just got smaller.",
+      "move": "Qd5"
+    },
+    {
+      "say": "He backs up — he has no choice. Every time he retreats, I tighten the box. That's the whole rhythm of this checkmate.",
+      "move": "Ke8"
+    },
+    {
+      "say": "Again, one square closer, still no check. And a big warning here: always make sure he has at least one square to go to. If he's not in check and has no legal moves, that's stalemate — a draw, and a heartbreak.",
+      "move": "Qd6"
+    },
+    {
+      "say": "See? Exactly one square left, and he takes it. He's trapped on the edge of the board now.",
+      "move": "Kf7"
+    },
+    {
+      "say": "Now a check to herd him toward the corner. The queen sweeps the whole seventh rank — there's no way back into the open board.",
+      "move": "Qd7+"
+    },
+    {
+      "say": "Into the corner he goes. His box is now just two squares big. But remember — the queen can never finish this alone.",
+      "move": "Kg8"
+    },
+    {
+      "say": "So here comes my king, strolling right up next to him. He'll be the bodyguard the queen needs for the final blow.",
+      "move": "Kg6"
+    },
+    {
+      "say": "The black king shuffles between his last two squares. Notice he still has a move — no stalemate. Everything is ready.",
+      "move": "Kh8"
+    },
+    {
+      "say": "And the queen sweeps across the back rank — checkmate! My king covers every escape square next door, and the back rank belongs to the queen. The corner became a cage.",
+      "move": "Qd8#"
+    },
+    {
+      "say": "That's the recipe: shrink the box without checking, bring your king in close, watch out for stalemate, and finish on the edge. Practice it until you can do it in your sleep."
+    }
+  ],
+  "The Discovered Attack": [
+    {
+      "say": "See my bishop tucked away on b2? It's staring down the long diagonal, straight at the black king — but my own knight on e5 is standing in the way. That knight is about to become a hero.",
+      "fen": "7k/7p/6p1/q3N3/8/8/1B3PPP/6K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "This setup is called a battery: two pieces lined up on the same diagonal, with the front one ready to step aside. The moment it moves, the bishop's attack switches on like a floodlight."
+    },
+    {
+      "say": "Watch. The knight leaps to c6 — and check! Not from the knight, mind you. From the bishop, all the way back on b2. We call this a discovered check.",
+      "move": "Nc6+"
+    },
+    {
+      "say": "Now look where the knight landed. From c6 it is also attacking the black queen on a5. Two threats from one move — and Black only gets to answer one of them."
+    },
+    {
+      "say": "Check always comes first, so the king slides over to g8. But that did nothing for the poor queen.",
+      "move": "Kg8"
+    },
+    {
+      "say": "And the knight scoops up the queen, completely free. That's the brutal math of a discovered attack — the opponent simply cannot stop both threats with one move.",
+      "move": "Nxa5"
+    },
+    {
+      "say": "One more secret. If the knight itself had given check too, that's a double check — the king must move, because nobody can block or capture two attackers at once. Double checks often end in checkmate."
+    },
+    {
+      "say": "So here's your new habit: look for two of your pieces lined up with something juicy behind enemy lines. Then ask — what happens if the front piece jumps away and makes a threat of its own?"
+    }
+  ],
+  "Deflection and Decoy Tactics": [
+    {
+      "say": "Black's rook on f8 has exactly one job: guarding the back rank. My queen would love to land on d8 — that would be checkmate — but the rook covers that square. Time to deal with the guard.",
+      "fen": "5rk1/p5pp/8/6N1/8/3Q4/6PP/5RK1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "This is deflection: when one enemy piece is holding the whole position together, you drag it away from its post — even if you have to pay for the privilege."
+    },
+    {
+      "say": "So I capture the guard! Rook takes rook, with check. Black has no choice about what comes next.",
+      "move": "Rxf8+"
+    },
+    {
+      "say": "The king has to take back. And just like that, the back rank has no defender left.",
+      "move": "Kxf8"
+    },
+    {
+      "say": "The queen glides to d8 — checkmate! My knight on g5 covers the escape square on f7. My rook gave its life just to pull that defender away from the back rank.",
+      "move": "Qd8#"
+    },
+    {
+      "say": "Now meet deflection's twin: the decoy. Instead of dragging a defender away from a square, we lure a victim onto one. Look at the black king — buried in the corner behind its own pawns.",
+      "fen": "5r1k/pp4pp/4Q2N/q7/8/8/5PPP/6K1 w - - 0 1"
+    },
+    {
+      "say": "My knight on h6 already controls g8, the king's only breathing room. If I could just force something onto g8 to seal the tomb... watch this famous trick."
+    },
+    {
+      "say": "Queen to g8 — check! Yes, she can be captured. That is the whole point. I'm paying my queen to lure the rook exactly where I want it.",
+      "move": "Qg8+"
+    },
+    {
+      "say": "The rook must take — the king can't, because my knight guards g8. Now the king is walled in completely by its own army.",
+      "move": "Rxg8"
+    },
+    {
+      "say": "Knight to f7 — smothered mate! The king has nowhere to go, and nobody can block a knight. One of the most beautiful checkmates in chess.",
+      "move": "Nf7#"
+    },
+    {
+      "say": "Remember the pair: deflection pulls a defender off its job, and a decoy plants an enemy piece on a fatal square. Both cost material up front — so before you dismiss a position, always ask, what if I sacrifice here?"
+    }
+  ],
+  "Thinking Two Moves Ahead": [
+    {
+      "say": "Two rooks against a cornered king. I'm going to deliver checkmate in exactly two moves — and I want you to see how I know that before I touch a single piece.",
+      "fen": "k7/8/6R1/7R/8/8/8/6K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Mate in two works like this: find a key move so that whatever Black replies, you have a checkmate ready on the next turn. The key move is often quiet — no check, no capture."
+    },
+    {
+      "say": "There it is. The rook slides up to g7 — no check at all. But it seals off the entire seventh rank. The black king's cage just got smaller.",
+      "move": "Rg7"
+    },
+    {
+      "say": "Now comes the discipline: count every single reply Black has. The squares a7 and b7 are covered by my rook, so the king has exactly one legal move. One reply — and I already have my answer ready."
+    },
+    {
+      "say": "The king shuffles over to b8 — it's the only thing Black can do.",
+      "move": "Kb8"
+    },
+    {
+      "say": "And the second rook swings down to h8 — checkmate! One rook cuts off the seventh rank, the other delivers the blow along the eighth. The classic ladder mate.",
+      "move": "Rh8#"
+    },
+    {
+      "say": "Here's the master's trick: picture the final mate before you calculate. Where must the king stand? Which piece gives the check, and which one cuts the escape? Then find the move that forces that picture onto the board — and check every reply."
+    }
+  ],
+  "Pawn Weaknesses: Isolated and Doubled Pawns": [
+    {
+      "say": "Look at Black's pawn on d5, then check its neighbors. No black pawn on the c-file, none on the e-file. That pawn is isolated — no friendly pawn can ever protect it again.",
+      "fen": "3r2k1/pp3ppp/8/3p4/8/4PN2/PP3PPP/5RK1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Why does that matter? Pieces have to babysit it forever. And the square right in front of it, d4, is a dream home for my knight — no enemy pawn can ever chase it away from there."
+    },
+    {
+      "say": "Knight to d4 — the blockade. It's protected by my own pawn, it can never be kicked away, and that black pawn is now frozen in place for the rest of the game.",
+      "move": "Nd4"
+    },
+    {
+      "say": "See how Black responds? The rook drops back to defend the pawn. A whole rook, chained to guard duty.",
+      "move": "Rd6"
+    },
+    {
+      "say": "And I simply pile on. My rook joins the pressure, and every white piece has a clear job: surround the weakling.",
+      "move": "Rd1"
+    },
+    {
+      "say": "The full plan against an isolated pawn is three steps: blockade it, trade pieces, then win it in the endgame — fewer defenders, same weakness. Simple chess."
+    },
+    {
+      "say": "Now the other classic weakness. See my two pawns stacked on the c-file? Those are doubled pawns. They can't defend each other, and the back one can never move while its twin stands in front.",
+      "fen": "2r3k1/p4ppp/8/8/8/2P5/2P2PPP/6K1 w - - 0 1"
+    },
+    {
+      "say": "And notice Black's rook — it has a half-open file aimed straight at them. The rear doubled pawn becomes a permanent target for the rest of the game."
+    },
+    {
+      "say": "One caveat: doubled pawns aren't always bad. If the trade that created them opened a file for your rooks or won you the bishop pair, that can be fair compensation. Just never accept them for free."
+    }
+  ],
+  "Passed Pawns and the Rook Endgame": [
+    {
+      "say": "This is the Lucena position — the most important rook endgame in chess. My pawn is one step from queening, but my own king is stuck in front of it, and Black's rook is ready to check me forever the moment I step out. The winning plan is called building a bridge — watch my rook.",
+      "fen": "1K6/1P2k3/8/8/8/8/r7/3R4 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Rook to the fourth rank. It looks mysterious right now — Black can't tell what it's for. Trust me and remember this lift: the bridge is being prepared.",
+      "move": "Rd4"
+    },
+    {
+      "say": "Black just waits — there is nothing useful to do. The black king is cut off by my rook and can only watch.",
+      "move": "Ra1"
+    },
+    {
+      "say": "Now my king finally steps out of the pawn's way. The queening square is free — so the checks begin.",
+      "move": "Kc7"
+    },
+    {
+      "say": "Check! The black rook starts chasing my king. If these checks never run out, Black saves the game.",
+      "move": "Rc1+"
+    },
+    {
+      "say": "I stay close, still guarding my pawn.",
+      "move": "Kb6"
+    },
+    {
+      "say": "Another check. Black keeps the rook far away so my king can't catch it.",
+      "move": "Rb1+"
+    },
+    {
+      "say": "I sidestep, keeping the pawn covered. Watch what my king is really doing — drifting down the board, closer and closer to my waiting rook.",
+      "move": "Kc6"
+    },
+    {
+      "say": "Black keeps checking — what else is there?",
+      "move": "Rc1+"
+    },
+    {
+      "say": "One more step down. Now my king and my rook on the fourth rank are almost connected.",
+      "move": "Kb5"
+    },
+    {
+      "say": "The last check Black will ever give in this game.",
+      "move": "Rb1+"
+    },
+    {
+      "say": "The rook blocks the check — the bridge is complete! My king shelters behind it and the pawn queens next move. Remember the two laws of rook endings: the rook lift to the fourth rank wins the Lucena, and a rook always belongs behind a passed pawn.",
+      "move": "Rb4"
+    }
+  ],
+  "Systematic Calculation: A Framework": [
+    {
+      "say": "White to move — and Black's queen has just attacked our knight. Panic and retreat? Not yet. Before you calculate a single line, stop and assess: what does the last move threaten, and what forcing moves do I have? That ten-second habit is the whole framework.",
+      "fen": "r4rk1/pp4pp/8/q5N1/8/8/P4PPP/3Q2K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Now list your candidate moves — every check, every capture, every threat. Retreating the knight is one. But look: queen to b3 is a check, staring at the black king down the long diagonal. Checks first — a check forces a reply, so the tree of variations stays small."
+    },
+    {
+      "say": "Queen to b3 — check! Black cannot grab our knight now; the check must be answered first. That is the power of forcing moves: your opponent's options shrink to almost nothing.",
+      "move": "Qb3+"
+    },
+    {
+      "say": "Blocking the diagonal just loses material, so the king slides into the corner. Notice we never had to guess what Black might do — the check made the reply nearly forced.",
+      "move": "Kh8"
+    },
+    {
+      "say": "Knight to f7 — check again! And here is your blunder-check question: what is Black's best reply? The rook could capture the knight, but then our queen swoops in to recapture with a winning position. So the king steps back instead.",
+      "move": "Nf7+"
+    },
+    {
+      "say": "King back to g8, attacking our knight once more. An amateur stops calculating here and retreats. But keep going — we have one more forcing move, and it is a beauty.",
+      "move": "Kg8"
+    },
+    {
+      "say": "Knight to h6 — double check! Both the knight and the queen hit the king at the same time. Against a double check there is no blocking and no capturing — the king must move. Back into the corner it goes.",
+      "move": "Nh6+"
+    },
+    {
+      "say": "Look at that king: buried in the corner, walled in by its own rook and pawns. When the enemy king has no air, your pattern alarm should ring — smothered mate. Calculate it to the very end before you commit. Watch.",
+      "move": "Kh8"
+    },
+    {
+      "say": "Queen to g8 — check! We throw away the entire queen. The king cannot take her — our knight guards that square — so the rook is forced to capture. We saw this position in our head three moves ago; that is why we can play it with total confidence.",
+      "move": "Qg8+"
+    },
+    {
+      "say": "The rook takes the queen — and now every escape square around the black king is filled by his own army. He has smothered himself.",
+      "move": "Rxg8"
+    },
+    {
+      "say": "Knight back to f7 — checkmate! The smothered mate. That is the framework: assess first, list candidates, calculate checks and captures before anything else, blunder-check every reply, and follow the forcing line all the way to a quiet end. Do that on every move and combinations stop being magic.",
+      "move": "Nf7#"
+    }
+  ],
+  "The Art of the Piece Sacrifice": [
+    {
+      "say": "Here is a position every attacking player dreams about. My bishop stares straight at the pawn on h7, my knight is coiled and ready to jump, my queen has a clear road to the kingside — and that h7 pawn is guarded only by the king. These are the preconditions for the most famous sacrifice in chess: the Greek Gift.",
+      "fen": "r1bq1rk1/pp3ppp/2n1p3/3pP3/1b1P4/3B1N2/PP3PPP/R1BQ1RK1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Run the checklist before you ever sacrifice. Bishop aimed at h7 — yes. Knight ready to hop to g5 — yes. Queen able to swing to h5 — yes. No defender covering h7 except the king, and no knight able to come back to f6 — yes. Every box ticks. So the bishop goes in."
+    },
+    {
+      "say": "Bishop takes on h7 — check! We give up a whole bishop to rip the roof off the castled king. And declining does not save Black: if the king hides in the corner instead, the bishop simply retreats and White is a clean pawn up with the attack still brewing.",
+      "move": "Bxh7+"
+    },
+    {
+      "say": "So the king takes. Now it stands alone in the open — and we bring the next attacker with tempo.",
+      "move": "Kxh7"
+    },
+    {
+      "say": "Knight to g5 — check! Every attacking move arrives with a threat, so Black never gets a single free move to organize a defence. Speed is the soul of the attack.",
+      "move": "Ng5+"
+    },
+    {
+      "say": "The king retreats home. Stepping forward to g6 instead walks into the storm — the queen comes out and the king gets hunted across open ground. Now the third attacker joins.",
+      "move": "Kg8"
+    },
+    {
+      "say": "Queen to h5. No check this time — but total domination. The threat is queen to h7, checkmate, and queen takes on f7 is hanging over Black too. Count the attackers: queen and knight against a naked king. Black has exactly one way to avoid mate.",
+      "move": "Qh5"
+    },
+    {
+      "say": "Black hands over the queen for our knight — pure desperation, but everything else gets mated on h7. When your opponent must give up the queen just to survive, your sacrifice has already paid for itself.",
+      "move": "Qxg5"
+    },
+    {
+      "say": "And we calmly recapture with the other bishop. Now count the ledger: we invested a bishop and a knight, and collected a queen and a pawn. That is a winning return on investment.",
+      "move": "Bxg5"
+    },
+    {
+      "say": "That is the art of the sacrifice: never give material on hope. Run the checklist, calculate the forced line, and name your concrete compensation out loud before the piece leaves your hand. If you cannot name what you are getting, do not sacrifice."
+    }
+  ],
+  "Bishop Endgames: Same vs. Opposite Colour": [
+    {
+      "say": "Two bishop endgames, two completely different stories. Here both bishops live on the light squares — wonderful news for the attacker. Black's pawns are stuck on light squares too, so my bishop can attack them while his bishop is chained to defending them. Forever.",
+      "fen": "8/3bk3/p7/1p2K3/1P6/P2B4/8/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "King to d5 — and notice the dark squares. Neither bishop can ever touch them, so they are a private road for my king. It strolls in, leans on those weak pawns, and Black's poor bishop becomes a full-time babysitter. Same-colour bishop endings reward the active side — march your king in and squeeze.",
+      "move": "Kd5"
+    },
+    {
+      "say": "Now flip one detail: opposite-coloured bishops. White is a clean pawn up here — but watch the black king park on e6, a light square my dark-squared bishop can never, ever attack. The pawn is blockaded for life.",
+      "fen": "8/8/4k3/4P3/3K4/1b4B1/8/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Watch White try everything anyway. The bishop probes on one side, hunting for a target.",
+      "move": "Bf4"
+    },
+    {
+      "say": "Black just waits. His bishop drifts along its diagonal, his king never moves an inch. There is nothing to defend against.",
+      "move": "Bc2"
+    },
+    {
+      "say": "Swing the bishop all the way around to the other wing, then.",
+      "move": "Bh6"
+    },
+    {
+      "say": "Still waiting. I could shuffle like this for fifty moves — the blockade never breaks, because the one square that matters is a colour my bishop does not speak. This is why opposite-coloured bishops are the great drawing weapon: even two extra pawns are often not enough.",
+      "move": "Ba4"
+    },
+    {
+      "say": "One more famous draw you absolutely must know: the rook pawn with the wrong bishop. White has an extra bishop AND an extra pawn — but the pawn queens on h8, a dark square, and this bishop only controls light squares. Watch what happens when Black simply sits in the corner.",
+      "fen": "6k1/8/6K1/7P/4B3/8/8/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Push the pawn forward — it is the only winning try White has.",
+      "move": "h6"
+    },
+    {
+      "say": "And the king calmly steps into the corner. I cannot evict him: my bishop is the wrong colour to ever touch that square.",
+      "move": "Kh8"
+    },
+    {
+      "say": "Push again and — stalemate! The black king has no legal move at all. A draw, with an extra piece and an extra pawn on the board. The wrong-coloured bishop turns a win into nothing.",
+      "move": "h7"
+    },
+    {
+      "say": "So remember the map. Same-coloured bishops favour the attacker — activate your king and hunt pawns fixed on the bishop's colour. Opposite colours favour the defender — blockade on the colour the enemy bishop cannot touch. And before trading down to a rook pawn, check your bishop: if it cannot control the queening corner, you are trading into a draw."
+    }
+  ],
+  "Ingredients of a Winning Attack": [
+    {
+      "say": "Paris, eighteen fifty-eight. Paul Morphy is playing two noblemen at the opera house — and this position contains every ingredient of a winning attack. Count the development: White's queen, both bishops and a rook all point at Black's king, which is stuck in the centre with its queenside swept away.",
+      "fen": "4kb1r/p2rqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2K4R w k - 0 14",
+      "orientation": "white"
+    },
+    {
+      "say": "Run the three attacking questions. Am I ahead in development? Massively. Are there open lines toward the king? The d-file is prised open and both diagonals are clear. Can I bring three or more pieces into the assault? Watch — the answer is the whole lesson."
+    },
+    {
+      "say": "Rook to d1 — the last piece joins the attack. Morphy's golden rule: when you are ahead in development, invite everyone to the party before you strike. Now every single White piece participates, and the rook on d7 is attacked twice. The pressure is unbearable.",
+      "move": "Rd1"
+    },
+    {
+      "say": "Black offers a queen trade, begging to take the sting out of the position. When you are the one attacking with more force, you decline — swapping queens is exactly what the defender is praying for.",
+      "move": "Qe6"
+    },
+    {
+      "say": "Instead — bishop takes the rook on d7, check! Remove the defender. And because every capture arrives with check, Black never gets a breath to untangle.",
+      "move": "Bxd7+"
+    },
+    {
+      "say": "The knight recaptures — and now that one knight is holding Black's entire position together. One defender carrying the whole house. Time for the most famous move of the nineteenth century.",
+      "move": "Nxd7"
+    },
+    {
+      "say": "Queen to b8 — check! Morphy hurls his whole queen onto a square the knight defends. Why? Deflection. The knight is forced to capture — and the moment it does, it abandons the d-file. Calculate it yourself: Black has only one legal reply.",
+      "move": "Qb8+"
+    },
+    {
+      "say": "Knight takes the queen — forced. Black is now a full queen up in material. And completely, hopelessly lost: the knight has left the d-file, and the back door swings wide open.",
+      "move": "Nxb8"
+    },
+    {
+      "say": "Rook to d8 — checkmate! The rook glides down the open file, protected all the way from g5 by the bishop. Two pieces deliver mate while Black's queen, rook and bishop watch helplessly from the sidelines.",
+      "move": "Rd8#"
+    },
+    {
+      "say": "Notice what actually won this game: a huge lead in development, open lines carved straight toward the king, every piece participating, and sacrifices used to remove defenders and deflect. Material never mattered — time and activity did."
+    },
+    {
+      "say": "Before you launch your own attack, ask Morphy's three questions. Am I ahead in development? Are lines open or openable toward the king? Can I bring three or more pieces before my opponent consolidates? Three yeses — attack with everything you have. Any no — go improve your worst piece first."
+    }
+  ],
+  "Outposts, Activity, and the Two Weaknesses": [
+    {
+      "say": "Let's talk about real estate. Look at the square d5: it sits deep in Black's half, my pawn on e4 protects it, and — here is the magic — no Black pawn can ever attack it again. The c-pawn and the e-pawn have both marched past it. That square is an outpost, and it is about to become a palace.",
+      "fen": "4r1k1/p3bppp/1p6/2p1p3/4P3/4N3/PP3PPP/3R2K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Knight to d5 — and it is there for life. Look at that knight: nothing can ever kick it. No pawn can reach it, Black's dark-squared bishop can never step on a light square, and if a rook ever gives itself up for it, my e-pawn simply recaptures. A knight on an outpost like this can be worth a rook.",
+      "move": "Nd5"
+    },
+    {
+      "say": "Now feel the activity gap. From d5 the knight hits the bishop, attacks the pawn on b6, and eyes c7 and f6 — eight squares of menace deep inside enemy territory. A piece is worth what it does, not what the textbook says it costs."
+    },
+    {
+      "say": "Black's bishop crawls backwards to babysit the b6 pawn. One knight move created two jobs — guard the pawn, cover c7 — and that bishop is now the saddest piece on the board. There is weakness number one: fixed, and permanent.",
+      "move": "Bd8"
+    },
+    {
+      "say": "Now for the principle of two weaknesses. Black's pieces are glued to the queenside, so we open a second front. The g-pawn marches — we will pry open the kingside while the defenders are stranded on the far wing.",
+      "move": "g4"
+    },
+    {
+      "say": "Black shores up the kingside — but every pawn move in front of your own king loosens a square forever. The defence is starting to stretch.",
+      "move": "g6"
+    },
+    {
+      "say": "And the h-pawn joins the march. The plan is simple: push on, crack open a file, and ask Black an impossible question — defend the king, or defend b6? His pieces cannot stand in two places at once.",
+      "move": "h4"
+    },
+    {
+      "say": "That is the winning method Capablanca and Karpov used for entire careers: fix one weakness, tie the defenders to it, then calmly create a second one on the opposite side of the board. The defence collapses not from a knockout punch, but from the stretch."
+    },
+    {
+      "say": "So here is your homework for every game: hunt for holes the enemy pawns can never cover and plant a knight there. Ask which of your pieces is doing the least, and improve it. And when your opponent has one weakness, do not rush — go make a second. Strong squares, active pieces, two weaknesses. That is positional chess."
+    }
+  ],
+  "The Art of Prophylaxis": [
+    {
+      "say": "Prophylaxis is the art of answering a question before it is asked. Petrosian made a career of it. Before every move he asked one thing: what does my opponent want to do? Let's ask it right here, playing White.",
+      "fen": "r1bq1rk1/ppp2ppp/2nb1n2/3p4/3P4/2N1PN2/PP2BPPP/R1BQ1RK1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Look at Black's setup. His light-squared bishop wants to come to g4 and lean on my knight, the piece holding my whole center together. If I just develop and let it happen, my position gets uncomfortable fast."
+    },
+    {
+      "say": "So, one quiet pawn step, and the g4 square is gone forever. No bishop pin, no knight hop. This is restraint: I spent one small move to cancel his best idea, and I gave my king some air for free.",
+      "move": "h3"
+    },
+    {
+      "say": "Watch what happens. Denied the dream square, the bishop settles for f5, a decent post but not the one he wanted. I have already made his pieces slightly worse without touching them.",
+      "move": "Bf5"
+    },
+    {
+      "say": "Prophylaxis has another tool: trade off the dangerous piece. Black's dark-squared bishop aims straight at my kingside, and it is the soul of any future attack. So let's remove the soul."
+    },
+    {
+      "say": "My knight leaps to the edge of the board and offers itself for that bishop. It looks odd, even ugly. But this is pure Petrosian: the move serves the plan, not the eye.",
+      "move": "Nb5"
+    },
+    {
+      "say": "Black pokes at my knight with his rook pawn, but it is already too late to save the bishop.",
+      "move": "a6"
+    },
+    {
+      "say": "The knight takes it. The attacker has just lost his attacking piece.",
+      "move": "Nxd6"
+    },
+    {
+      "say": "The queen recaptures, and look at the result. Black has no g4 square, no dark-squared bishop, and no kingside attack. His whole plan died before a single threat ever appeared on the board.",
+      "move": "Qxd6"
+    },
+    {
+      "say": "That is prophylaxis: not passive defense, but putting out fires before they are lit. Before every move, ask what your opponent wants. Then find the move that stops it and improves your own position at the same time."
+    }
+  ],
+  "Converting Technical Advantages": [
+    {
+      "say": "Technical endgames are where half points leak away. Here is a classic: just kings and pawns, level on the kingside, but I own one priceless asset, a passed pawn far away on the a-file. Watch how it wins almost by itself.",
+      "fen": "8/8/4kppp/8/P3K3/5P2/6PP/8 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "The outside passed pawn is not a runner, it is a decoy. Its job is to drag the black king to the edge of the world while my own king raids the other side. One pawn, two purposes."
+    },
+    {
+      "say": "Forward it goes. Black must react right now, or the pawn simply runs through.",
+      "move": "a5"
+    },
+    {
+      "say": "The black king turns and chases. He has no choice; nothing else on the board can catch it.",
+      "move": "Kd6"
+    },
+    {
+      "say": "Another step. Notice my king has not moved at all. The pawn is doing all the pulling.",
+      "move": "a6"
+    },
+    {
+      "say": "The defender trudges further from his own pawns. Every step toward my passer is a step away from everything he has to protect.",
+      "move": "Kc6"
+    },
+    {
+      "say": "One square from glory. Now Black is dragged all the way to the corner.",
+      "move": "a7"
+    },
+    {
+      "say": "There he is, fully committed. Measure the distance: the black king is now four files away from his own kingside pawns.",
+      "move": "Kb7"
+    },
+    {
+      "say": "And here is the point of the whole operation. I let the pawn go. It has done its job. My king marches the other way, straight into the heart of his position.",
+      "move": "Kd5"
+    },
+    {
+      "say": "He captures, and on paper material is level again. But look at the geography: his king sits in the far corner, and mine is one step from his pawns.",
+      "move": "Kxa7"
+    },
+    {
+      "say": "My king arrives at the feast. The three black pawns will fall one by one, and one of my kingside pawns will queen. The race was decided before it even started.",
+      "move": "Ke6"
+    },
+    {
+      "say": "That is conversion technique: use the outside passed pawn as bait, not as a hero. In technical endgames, always ask which side of the board the real battle is on. Precision, not brilliance, is what banks the full point."
+    }
+  ],
+  "Building a Tournament Repertoire": [
+    {
+      "say": "A tournament repertoire is not a pile of memorized moves; it is a tree of positions you genuinely understand. Let me show you what that means by building toward one of the great tabiyas of chess, move by move from the very start.",
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "My repertoire starts with the king's pawn. First rule of repertoire building: pick a first move you will happily play for years, because every hour of study compounds on top of it.",
+      "move": "e4"
+    },
+    {
+      "say": "Black answers symmetrically, the oldest and soundest reply. My repertoire must have a clear answer ready for this and for every other defense.",
+      "move": "e5"
+    },
+    {
+      "say": "The knight develops with a threat against the center pawn. Natural moves, yes, but each one is a branch of my tree that I have prepared in advance.",
+      "move": "Nf3"
+    },
+    {
+      "say": "Black defends his pawn. So far we are in territory both players have seen a thousand times, and that is exactly the value: these moves cost me seconds on the clock.",
+      "move": "Nc6"
+    },
+    {
+      "say": "The Spanish bishop. This is a system choice: the same structures and the same plans, game after game. Playing one opening deeply beats dabbling in ten, because your middlegame knowledge stacks up.",
+      "move": "Bb5"
+    },
+    {
+      "say": "Now let's fast-forward nine moves into the main line. This is a tabiya, a home position both sides steer toward. Preparation does not mean reciting moves to get here; it means knowing what both armies want to do next.",
+      "fen": "r1bq1rk1/2p1bppp/p1np1n2/1p2p3/4P3/1BP2N1P/PP1P1PP1/RNBQR1K1 b - - 0 9"
+    },
+    {
+      "say": "Black begins the classic plan: the knight swings out to the edge to chase my Spanish bishop and grab queenside space.",
+      "move": "Na5"
+    },
+    {
+      "say": "I have met this guest many times. The bishop slides back to safety on c2, keeping its eye trained on the kingside for later.",
+      "move": "Bc2"
+    },
+    {
+      "say": "Black gains space on the queenside. Every one of these moves is predictable to a prepared player, which means I am spending seconds, not minutes.",
+      "move": "c5"
+    },
+    {
+      "say": "And I stake my claim in the center, the standard counter. From here I know the plans to roughly move fifteen: where my pieces belong, which pawn breaks matter, and which endgames favor me.",
+      "move": "d4"
+    },
+    {
+      "say": "That is what a complete repertoire means: an answer to everything, plans instead of memorization, and structures you have lived in. Study the positions at the end of your lines, not just the moves that reach them."
+    }
+  ],
+  "Understanding Chess Imbalances": [
+    {
+      "say": "Every plan begins with an imbalance, some feature of the position that differs between the two sides. Material is dead level here, but this position is anything but equal. Let's learn to read it.",
+      "fen": "3r1bk1/5ppp/p2p4/1p1Np3/4P3/5P2/PPP3PP/3R2K1 w - - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "First imbalance: my knight sits on d5, an eternal outpost. No black pawn can ever attack it, and nothing can trade it off cheaply. A knight like this is worth far more than its face value."
+    },
+    {
+      "say": "Second imbalance: his bishop. It is locked behind its own pawns, which stand on its own color. It defends, it waits, it does nothing. Good knight against bad bishop is the kind of edge that wins games slowly and surely."
+    },
+    {
+      "say": "Now the plan: maximize my imbalance and create a second weakness. My rook pawn pokes at his queenside chain.",
+      "move": "a4"
+    },
+    {
+      "say": "He pushes past to keep lines closed, but look: that pawn is now fixed on a dark square, the same color as his sad bishop, where it can be attacked forever.",
+      "move": "b4"
+    },
+    {
+      "say": "And here is the luxury an imbalance buys you: time. Black has no counterplay, so I calmly improve my king. When your opponent has nothing to do, hurry slowly.",
+      "move": "Kf2"
+    },
+    {
+      "say": "Black tries to free the bishop toward the long diagonal. It is the right idea, but it costs time he does not have.",
+      "move": "g6"
+    },
+    {
+      "say": "I strike at the fixed pawn. This is the principle of two weaknesses: a defense can usually hold one front, but almost never two.",
+      "move": "c3"
+    },
+    {
+      "say": "He takes; there is nothing better, since standing still would simply lose the pawn.",
+      "move": "bxc3"
+    },
+    {
+      "say": "I recapture, and the b-file opens for my rook. Add up the imbalances now: eternal knight, bad bishop, an open file, and a queenside target. Black's position will sag a little more with every move.",
+      "move": "bxc3"
+    },
+    {
+      "say": "That is planning with imbalances: list yours, list theirs, then maximize your best one while denying them theirs. Static edges like an outpost or a bad bishop do not run away, so convert them patiently."
+    }
+  ],
+  "The Clock as a Weapon": [
+    {
+      "say": "At tournament level the clock is a piece, and you can win or lose with it. The skill is knowing which moves deserve seconds and which deserve minutes. Look here: Black has just taken my knight on f3 with his bishop. How long should this decision take?",
+      "fen": "r2qk2r/ppp2ppp/2np1n2/2b1p3/2B1P3/2NP1b2/PPP2PPP/R1BQ1RK1 w kq - 0 7",
+      "orientation": "white"
+    },
+    {
+      "say": "About five seconds. It is a routine recapture with one sensible choice. The queen takes back, and I bank the time. Routine moves played quickly are deposits into your clock account.",
+      "move": "Qxf3"
+    },
+    {
+      "say": "He jabs at my queen with the knight, hitting the square behind it as well. Again, a narrow, forced sort of decision. Do not dramatize it.",
+      "move": "Nd4"
+    },
+    {
+      "say": "The queen steps back home, covering everything at once. Three moves, barely a minute of clock spent in total. That saved time is not laziness, it is ammunition.",
+      "move": "Qd1"
+    },
+    {
+      "say": "Now a completely different animal. Same stage of the game, but here my light-squared bishop can capture the pawn on h7, a genuine sacrifice. This is a critical moment, worth ten or fifteen minutes of pure calculation. This is what you saved the time for.",
+      "fen": "r1bq1rk1/ppp1bppp/2n1p3/3pP3/3P4/2NB1N2/PPP2PPP/R1BQK2R w KQ - 0 8"
+    },
+    {
+      "say": "After real calculation, in it goes. The bishop takes the pawn and drags the king into the open. A decision like this cannot be unmade, so it had to be verified, not guessed.",
+      "move": "Bxh7+"
+    },
+    {
+      "say": "The king accepts the gift. From here, every move of mine must be precise.",
+      "move": "Kxh7"
+    },
+    {
+      "say": "The knight follows up with check, the standard second wave of this classic sacrifice.",
+      "move": "Ng5+"
+    },
+    {
+      "say": "The king retreats to its home square, hoping the storm passes.",
+      "move": "Kg8"
+    },
+    {
+      "say": "And the queen joins the hunt, threatening mate on the spot. Every minute I invested before the sacrifice pays off now, because I already know these moves; I calculated them before the bishop ever leapt.",
+      "move": "Qh5"
+    },
+    {
+      "say": "So treat the clock like material: spend it where the position is critical, save it where it is routine, and think on your opponent's time. Most games at this level are decided by who budgets better, not by who calculates better."
+    }
+  ],
+  "Welcome": [
+    {
+      "say": "Welcome aboard. I am your coach, and this academy is where we turn your games into real skill. Let me show you how lessons work here.",
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "orientation": "white"
+    },
+    {
+      "say": "Lessons happen right on the board. When I explain an idea, the pieces move. Watch — the king pawn steps forward two squares.",
+      "move": "e4"
+    },
+    {
+      "say": "Black answers in the center. Every lesson is a short spoken walk-through like this one. You watch the board, I do the talking.",
+      "move": "e5"
+    },
+    {
+      "say": "The knight comes out, attacking that center pawn. One idea at a time — and you can pause me or replay any step whenever you like.",
+      "move": "Nf3"
+    },
+    {
+      "say": "After each lesson you drill the same idea with real puzzles, so it sticks in your hands, not just your head."
+    },
+    {
+      "say": "Your track is built for your level — lessons, quizzes, and drills in exactly the right order. Ready? Let us get to work."
+    }
+  ]
+}

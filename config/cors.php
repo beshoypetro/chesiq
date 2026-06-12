@@ -21,7 +21,7 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:5173')],
 
-    'allowed_origins_patterns' => ['#^https://.*\.ngrok-free\.app$#', '#^https://.*\.ngrok-free\.dev$#', '#^https://.*\.ngrok\.io$#'],
+    'allowed_origins_patterns' => ['#^https://.*\.ngrok-free\.app$#', '#^https://.*\.ngrok-free\.dev$#', '#^https://.*\.ngrok\.io$#', '#^https://.*\.workers\.dev$#'],
 
     'allowed_headers' => ['*'],
 

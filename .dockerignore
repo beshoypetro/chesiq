@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/tts-cache
+database/database.sqlite
+database/backups
+piper/voices/*.onnx
+piper/voices/*.onnx.json
+.env
+.env.*
+tests
+*.md

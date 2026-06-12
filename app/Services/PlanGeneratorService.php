@@ -99,6 +99,7 @@ class PlanGeneratorService
                     'maxOutputTokens' => 1200,
                     'temperature' => 0.6,
                     'responseMimeType' => 'application/json',
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable $e) {

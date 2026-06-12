@@ -436,7 +436,9 @@ PROMPT;
             $resp = Http::timeout(20)->post($url, [
                 'system_instruction' => ['parts' => [['text' => $system]]],
                 'contents' => [['role' => 'user', 'parts' => [['text' => $userPrompt]]]],
-                'generationConfig' => ['maxOutputTokens' => 350, 'temperature' => 0.7],
+                // thinkingBudget:0 — 2.5 flash otherwise spends the token budget on
+                // hidden reasoning and the chat reply comes back truncated/empty.
+                'generationConfig' => ['maxOutputTokens' => 600, 'temperature' => 0.7, 'thinkingConfig' => ['thinkingBudget' => 0]],
             ]);
         } catch (\Throwable $e) {
             Log::warning('Teacher Gemini error', ['error' => $e->getMessage()]);
@@ -649,6 +651,7 @@ SYS;
                     'maxOutputTokens' => 400,
                     'temperature' => 0.3,
                     'responseMimeType' => 'application/json',
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable $e) {

@@ -99,6 +99,10 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 200,
                     'temperature' => 0.7,
+                    // Gemini 2.5 flash spends maxOutputTokens on hidden "thinking";
+                    // disabling it frees the whole budget for the visible answer
+                    // (otherwise short coaching replies truncate at MAX_TOKENS).
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable) {
@@ -218,6 +222,7 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 350,
                     'temperature' => 0.7,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable $e) {
@@ -454,6 +459,7 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 80,
                     'temperature' => 0.7,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable) {
@@ -555,6 +561,7 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 1200,
                     'temperature' => 0.6,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                     'responseMimeType' => 'application/json',
                 ],
             ]);
@@ -641,6 +648,7 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 600,
                     'temperature' => 0.5,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                     'responseMimeType' => 'application/json',
                 ],
             ]);
@@ -792,6 +800,7 @@ PROMPT;
                 'generationConfig' => [
                     'maxOutputTokens' => 500,
                     'temperature' => 0.7,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable $e) {

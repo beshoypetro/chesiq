@@ -1,0 +1,42 @@
+# Render Blueprint for the chesiq Laravel API (free tier, Docker).
+# Secrets (APP_KEY, DB_URL, GEMINI_API_KEY) are marked sync:false — set them in the
+# Render dashboard so they never live in git.
+services:
+  - type: web
+    name: chesiq-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: Chesiq
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://tanstack-start-app.beshoy-emad-p.workers.dev
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      - key: GEMINI_API_KEY
+        sync: false

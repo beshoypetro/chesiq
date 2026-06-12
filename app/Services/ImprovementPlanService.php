@@ -855,7 +855,7 @@ class ImprovementPlanService
             $response = Http::timeout(20)->post($url, [
                 'system_instruction' => ['parts' => [['text' => $system]]],
                 'contents' => [['role' => 'user', 'parts' => [['text' => $deterministic]]]],
-                'generationConfig' => ['maxOutputTokens' => 200, 'temperature' => 0.7],
+                'generationConfig' => ['maxOutputTokens' => 200, 'temperature' => 0.7, 'thinkingConfig' => ['thinkingBudget' => 0]],
             ]);
         } catch (\Throwable $e) {
             Log::warning('ImprovementPlan Gemini intro error', ['error' => $e->getMessage()]);

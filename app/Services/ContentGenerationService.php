@@ -150,7 +150,7 @@ class ContentGenerationService
         try {
             $resp = Http::timeout(30)->post($url, [
                 'contents' => [['role' => 'user', 'parts' => [['text' => $prompt]]]],
-                'generationConfig' => ['maxOutputTokens' => $maxTokens, 'temperature' => 0.5],
+                'generationConfig' => ['maxOutputTokens' => $maxTokens, 'temperature' => 0.5, 'thinkingConfig' => ['thinkingBudget' => 0]],
             ]);
         } catch (\Throwable $e) {
             Log::warning('ContentGen Gemini error', ['error' => $e->getMessage()]);

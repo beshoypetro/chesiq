@@ -102,6 +102,7 @@ class SpeechTranscriptionService
                     'maxOutputTokens' => 500,
                     // Deterministic: a transcription is a fact, not a creative reply.
                     'temperature' => 0.0,
+                    'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
             ]);
         } catch (\Throwable) {

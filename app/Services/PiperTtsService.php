@@ -20,8 +20,10 @@ class PiperTtsService
     /** Hard cap on input length. Longer text = longer CPU time = DoS surface. */
     private const MAX_TEXT_LENGTH = 2000;
 
-    /** Per-request synthesis timeout (seconds). Piper is fast on CPU but guard against hangs. */
-    private const PROCESS_TIMEOUT = 15;
+    /** Per-request synthesis timeout (seconds). High-quality models (en_US-ryan-high)
+     * need a long first-load on cold disk cache, so this is generous; cache hits
+     * never reach the process at all. */
+    private const PROCESS_TIMEOUT = 45;
 
     /** Default voice. Matches `piper/voices/{voice}.onnx` + `{voice}.onnx.json`. */
     private const DEFAULT_VOICE = 'en_US-amy-medium';
